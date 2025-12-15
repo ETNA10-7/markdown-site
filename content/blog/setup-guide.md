@@ -463,12 +463,32 @@ Edit `index.html` to update:
 
 Edit `public/llms.txt` and `public/robots.txt` with your site information.
 
+## Real-time Stats
+
+Your blog includes a real-time analytics page at `/stats`:
+
+- **Active visitors**: See who is currently on your site and which pages they are viewing
+- **Total page views**: All-time view count across the site
+- **Unique visitors**: Count based on anonymous session IDs
+- **Views by page**: Every page and post ranked by view count
+
+Stats update automatically without refreshing. Powered by Convex subscriptions.
+
+How it works:
+
+- Page views are recorded as event records (not counters) to prevent write conflicts
+- Active sessions use a heartbeat system (30 second interval)
+- Sessions expire after 2 minutes of inactivity
+- A cron job cleans up stale sessions every 5 minutes
+- No personal data is stored (only anonymous UUIDs)
+
 ## API Endpoints
 
 Your blog includes these API endpoints for search engines and AI:
 
 | Endpoint                       | Description                 |
 | ------------------------------ | --------------------------- |
+| `/stats`                       | Real-time site analytics    |
 | `/rss.xml`                     | RSS feed with descriptions  |
 | `/rss-full.xml`                | RSS feed with full content  |
 | `/sitemap.xml`                 | Dynamic XML sitemap         |

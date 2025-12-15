@@ -2,7 +2,7 @@
 
 ## Current Status
 
-v1.1.0 ready for deployment. Build passes. TypeScript verified.
+v1.2.0 ready for deployment. Build passes. TypeScript verified.
 
 ## Completed
 
@@ -28,6 +28,11 @@ v1.1.0 ready for deployment. Build passes. TypeScript verified.
 - [x] Mobile responsive design
 - [x] Edge functions for dynamic Convex HTTP proxying
 - [x] Vite dev server proxy for local development
+- [x] Real-time stats page at /stats
+- [x] Page view tracking with event records pattern
+- [x] Active session heartbeat system
+- [x] Cron job for stale session cleanup
+- [x] Stats link in homepage footer
 
 ## Deployment Steps
 
@@ -39,7 +44,6 @@ v1.1.0 ready for deployment. Build passes. TypeScript verified.
 ## Future Enhancements
 
 - [ ] Search functionality
-- [ ] Post view counter display
 - [ ] Related posts suggestions
 - [ ] Newsletter signup
 - [ ] Comments system

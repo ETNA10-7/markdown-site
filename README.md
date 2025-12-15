@@ -11,6 +11,7 @@ A minimalist markdown site built with React, Convex, and Vite. Optimized for SEO
 - Four theme options: Dark, Light, Tan (default), Cloud
 - Real-time data with Convex
 - Fully responsive design
+- Real-time analytics at `/stats`
 
 ### SEO and Discovery
 
@@ -264,10 +265,29 @@ markdown-site/
 - lucide-react
 - Netlify
 
+## Real-time Stats
+
+The `/stats` page shows real-time analytics powered by Convex:
+
+- **Active visitors**: Current visitors on the site with per-page breakdown
+- **Total page views**: All-time view count
+- **Unique visitors**: Based on anonymous session IDs
+- **Views by page**: List of all pages sorted by view count
+
+Stats update automatically via Convex subscriptions. No page refresh needed.
+
+How it works:
+
+- Page views are recorded as event records (not counters) to avoid write conflicts
+- Active sessions use heartbeat presence (30s interval, 2min timeout)
+- A cron job cleans up stale sessions every 5 minutes
+- No PII stored (only anonymous session UUIDs)
+
 ## API Endpoints
 
 | Endpoint                       | Description                     |
 | ------------------------------ | ------------------------------- |
+| `/stats`                       | Real-time site analytics        |
 | `/rss.xml`                     | RSS feed with post descriptions |
 | `/rss-full.xml`                | RSS feed with full post content |
 | `/sitemap.xml`                 | Dynamic XML sitemap             |

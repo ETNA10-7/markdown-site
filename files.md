@@ -28,10 +28,11 @@ A brief description of each file in the codebase.
 
 ### Pages (`src/pages/`)
 
-| File       | Description                                             |
-| ---------- | ------------------------------------------------------- |
-| `Home.tsx` | Landing page with intro, featured essays, and post list |
-| `Post.tsx` | Individual blog post view with JSON-LD injection        |
+| File        | Description                                             |
+| ----------- | ------------------------------------------------------- |
+| `Home.tsx`  | Landing page with intro, featured essays, and post list |
+| `Post.tsx`  | Individual blog post view with JSON-LD injection        |
+| `Stats.tsx` | Real-time analytics dashboard with visitor stats        |
 
 ### Components (`src/components/`)
 
@@ -49,6 +50,12 @@ A brief description of each file in the codebase.
 | ------------------ | ---------------------------------------------------- |
 | `ThemeContext.tsx` | Theme state management with localStorage persistence |
 
+### Hooks (`src/hooks/`)
+
+| File                 | Description                                   |
+| -------------------- | --------------------------------------------- |
+| `usePageTracking.ts` | Page view recording and active session heartbeat |
+
 ### Styles (`src/styles/`)
 
 | File         | Description                                                      |
@@ -57,20 +64,23 @@ A brief description of each file in the codebase.
 
 ## Convex Backend (`convex/`)
 
-| File               | Description                                       |
-| ------------------ | ------------------------------------------------- |
-| `schema.ts`        | Database schema (posts, pages, viewCounts tables) |
-| `posts.ts`         | Queries and mutations for blog posts, view counts |
-| `pages.ts`         | Queries and mutations for static pages            |
-| `http.ts`          | HTTP endpoints: sitemap, API, Open Graph metadata |
-| `rss.ts`           | RSS feed generation (standard and full content)   |
-| `convex.config.ts` | Convex app configuration                          |
-| `tsconfig.json`    | Convex TypeScript configuration                   |
+| File               | Description                                                   |
+| ------------------ | ------------------------------------------------------------- |
+| `schema.ts`        | Database schema (posts, pages, viewCounts, pageViews, activeSessions) |
+| `posts.ts`         | Queries and mutations for blog posts, view counts             |
+| `pages.ts`         | Queries and mutations for static pages                        |
+| `stats.ts`         | Real-time stats queries, page view recording, session heartbeat |
+| `crons.ts`         | Cron job for stale session cleanup                            |
+| `http.ts`          | HTTP endpoints: sitemap, API, Open Graph metadata             |
+| `rss.ts`           | RSS feed generation (standard and full content)               |
+| `convex.config.ts` | Convex app configuration                                      |
+| `tsconfig.json`    | Convex TypeScript configuration                               |
 
 ### HTTP Endpoints (defined in `http.ts`)
 
 | Route           | Description                            |
 | --------------- | -------------------------------------- |
+| `/stats`        | Real-time site analytics page          |
 | `/rss.xml`      | RSS feed with descriptions             |
 | `/rss-full.xml` | RSS feed with full content for LLMs    |
 | `/sitemap.xml`  | Dynamic XML sitemap for search engines |

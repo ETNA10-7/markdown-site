@@ -50,4 +50,24 @@ export default defineSchema({
     key: v.string(),
     value: v.any(),
   }).index("by_key", ["key"]),
+
+  // Page view events for analytics (event records pattern)
+  pageViews: defineTable({
+    path: v.string(),
+    pageType: v.string(), // "blog" | "page" | "home" | "stats"
+    sessionId: v.string(),
+    timestamp: v.number(),
+  })
+    .index("by_path", ["path"])
+    .index("by_timestamp", ["timestamp"])
+    .index("by_session_path", ["sessionId", "path"]),
+
+  // Active sessions for real-time visitor tracking
+  activeSessions: defineTable({
+    sessionId: v.string(),
+    currentPath: v.string(),
+    lastSeen: v.number(),
+  })
+    .index("by_sessionId", ["sessionId"])
+    .index("by_lastSeen", ["lastSeen"]),
 });

@@ -7,7 +7,7 @@ order: 0
 
 Reference documentation for setting up, customizing, and deploying this markdown site.
 
-**How publishing works:** Write posts in markdown, run `npm run sync`, and they appear on your live site immediately. No rebuild or redeploy needed. Convex handles real-time data sync, so connected browsers update automatically.
+**How publishing works:** Write posts in markdown, run `npm run sync` for development or `npm run sync:prod` for production, and they appear on your live site immediately. No rebuild or redeploy needed. Convex handles real-time data sync, so connected browsers update automatically.
 
 ## Quick start
 
@@ -16,7 +16,8 @@ git clone https://github.com/waynesutton/markdown-site.git
 cd markdown-site
 npm install
 npx convex dev
-npm run sync
+npm run sync          # development
+npm run sync:prod     # production
 npm run dev
 ```
 
@@ -178,10 +179,22 @@ body {
 | Default OG image | `public/images/og-default.svg` | 1200x630 |
 | Post images      | `public/images/`               | Any      |
 
+## Real-time stats
+
+The `/stats` page displays real-time analytics:
+
+- Active visitors (with per-page breakdown)
+- Total page views
+- Unique visitors
+- Views by page (sorted by count)
+
+All stats update automatically via Convex subscriptions.
+
 ## API endpoints
 
 | Endpoint                       | Description             |
 | ------------------------------ | ----------------------- |
+| `/stats`                       | Real-time analytics     |
 | `/rss.xml`                     | RSS feed (descriptions) |
 | `/rss-full.xml`                | RSS feed (full content) |
 | `/sitemap.xml`                 | XML sitemap             |
@@ -250,7 +263,8 @@ export default defineSchema({
 **Posts not appearing**
 
 - Check `published: true` in frontmatter
-- Run `npm run sync`
+- Run `npm run sync` for development
+- Run `npm run sync:prod` for production
 - Verify in Convex dashboard
 
 **RSS/Sitemap errors**

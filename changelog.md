@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.2.0] - 2025-12-14
+
+### Added
+
+- Real-time stats page at `/stats` with live visitor tracking
+  - Active visitors count with per-page breakdown
+  - Total page views and unique visitors
+  - Views by page sorted by popularity
+- Page view tracking via event records pattern (no write conflicts)
+- Active session heartbeat system (30s interval, 2min timeout)
+- Cron job for stale session cleanup every 5 minutes
+- New Convex tables: `pageViews` and `activeSessions`
+- Stats link in homepage footer
+
+### Technical
+
+- Uses anonymous session UUIDs (no PII stored)
+- All stats update in real-time via Convex subscriptions
+- Mobile responsive stats grid (4 to 2 to 1 columns)
+- Theme support with CSS variables (dark, light, tan, cloud)
+
 ## [1.1.0] - 2025-12-14
 
 ### Added

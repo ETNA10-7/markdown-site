@@ -109,7 +109,11 @@ export default function Home() {
           >
             project on GitHub
           </a>{" "}
-          to fork and deploy your own.
+          to fork and deploy your own. View{" "}
+          <a href="/stats" className="home-text-link">
+            real-time site stats
+          </a>
+          .
         </p>
       </section>
     </div>
