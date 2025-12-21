@@ -232,6 +232,43 @@ export default function Home() {
           </a>
           .
         </p>
+        <p></p>
+        <br></br>
+        <p className="home-footer-text">
+          Created by{" "}
+          <a
+            href="https://x.com/waynesutton"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Wayne
+          </a>{" "}
+          with Convex, Cursor, and Claude Opus 4.5. Follow on{" "}
+          <a
+            href="https://x.com/waynesutton"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Twitter/X
+          </a>
+          ,{" "}
+          <a
+            href="https://www.linkedin.com/in/waynesutton/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LinkedIn
+          </a>
+          , and{" "}
+          <a
+            href="https://github.com/waynesutton"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+          .
+        </p>
       </section>
     </div>
   );
