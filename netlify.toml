@@ -44,11 +44,11 @@
   path = "/api/geo"
   function = "geo"
 
-# Open Graph bot detection (excludes static files and API routes)
+# Open Graph bot detection (excludes raw markdown directory)
 [[edge_functions]]
   path = "/*"
   function = "botMeta"
-  excluded_paths = ["/raw/*", "/api/*", "/**/*.md", "/**/*.xml", "/**/*.txt", "/**/*.yaml", "/**/*.json"]
+  excludedPath = "/raw/*"
 
 # Security and SEO headers
 [[headers]]
