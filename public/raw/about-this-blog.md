@@ -11,7 +11,7 @@ Tags: convex, netlify, open-source, markdown, ai, llm
 
 # About This Markdown Framework
 
-An open-source publishing framework for AI agents and developers. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.
+An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs.. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.
 
 ## How It Works
 
@@ -81,11 +81,13 @@ The setup takes about 10 minutes:
 **Sync commands:**
 
 **Development:**
+
 - `npm run sync` - Sync markdown content
 - `npm run sync:discovery` - Update discovery files (AGENTS.md, llms.txt)
 - `npm run sync:all` - Sync content + discovery files together
 
 **Production:**
+
 - `npm run sync:prod` - Sync markdown content
 - `npm run sync:discovery:prod` - Update discovery files
 - `npm run sync:all:prod` - Sync content + discovery files together

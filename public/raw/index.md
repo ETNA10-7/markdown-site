@@ -32,7 +32,7 @@ This is the homepage index of all published content.
 ## Pages (5)
 
 - **[Docs](/raw/docs.md)**
-- **[About](/raw/about.md)** - An open-source publishing framework for AI agents and developers.
+- **[About](/raw/about.md)** - An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs..
 - **[Projects](/raw/projects.md)**
 - **[Contact](/raw/contact.md)**
 - **[Changelog](/raw/changelog.md)**

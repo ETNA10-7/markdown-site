@@ -91,7 +91,7 @@ http.route({
       site: SITE_NAME,
       url: SITE_URL,
       description:
-        "An open-source publishing framework for AI agents and developers. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.",
+        "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs.. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.",
       posts: posts.map((post) => ({
         title: post.title,
         slug: post.slug,
@@ -214,7 +214,7 @@ http.route({
       site: SITE_NAME,
       url: SITE_URL,
       description:
-        "An open-source publishing framework for AI agents and developers. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.",
+        "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs.. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.",
       exportedAt: new Date().toISOString(),
       totalPosts: fullPosts.length,
       posts: fullPosts,

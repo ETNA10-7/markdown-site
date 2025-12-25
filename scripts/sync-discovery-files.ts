@@ -97,10 +97,10 @@ function loadSiteConfig(): SiteConfigData {
         title: titleMatch?.[1] || "markdown sync framework",
         bio:
           bioMatch?.[1] ||
-          "An open-source publishing framework for AI agents and developers.",
+          "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs..",
         description:
           bioMatch?.[1] ||
-          "An open-source publishing framework for AI agents and developers.",
+          "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs..",
         gitHubRepo,
       };
     }
@@ -111,18 +111,16 @@ function loadSiteConfig(): SiteConfigData {
   return {
     name: "markdown sync framework",
     title: "markdown sync framework",
-    bio: "An open-source publishing framework for AI agents and developers.",
+    bio: "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs..",
     description:
-      "An open-source publishing framework for AI agents and developers.",
+      "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs..",
   };
 }
 
 // Get site URL from environment or config
 function getSiteUrl(): string {
   return (
-    process.env.SITE_URL ||
-    process.env.VITE_SITE_URL ||
-    "https://markdown.fast"
+    process.env.SITE_URL || process.env.VITE_SITE_URL || "https://markdown.fast"
   );
 }
 
@@ -383,4 +381,3 @@ syncDiscoveryFiles().catch((error) => {
   console.error("Error syncing discovery files:", error);
   process.exit(1);
 });
-

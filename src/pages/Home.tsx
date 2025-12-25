@@ -95,12 +95,10 @@ export default function Home() {
 
         {/* Intro with JSX support for links */}
         <p className="home-intro">
-          <strong>
-            An open-source publishing framework for AI agents and developers.
-          </strong>{" "}
-          <br />
-          Write markdown, sync from the terminal. <br />
-          <br />
+          An open-source publishing framework built for AI agents and developers
+          <br></br>
+          to ship websites, docs, or blogs. <br></br>
+          <br /> Write markdown, sync from the terminal.{" "}
           <a
             href="https://github.com/waynesutton/markdown-site"
             target="_blank"

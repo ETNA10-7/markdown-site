@@ -27,10 +27,6 @@ The goal: AI services fetch `/raw/{slug}.md` and parse clean markdown without HT
 I attempted to load and read the raw markdown at the URL you provided but was unable to fetch the content from that link. The page could not be loaded directly and I cannot access its raw markdown.
 ```
 
-```
-The page could not be loaded with the tools currently available, so its raw markdown content is not accessible.
-```
-
 **Perplexity:**
 
 ```
