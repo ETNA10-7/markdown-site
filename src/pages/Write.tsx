@@ -59,6 +59,7 @@ const POST_FIELDS = [
   { name: "blogFeatured", required: false, example: "true" },
   { name: "newsletter", required: false, example: "true" },
   { name: "contactForm", required: false, example: "true" },
+  { name: "unlisted", required: false, example: "true" },
 ];
 
 // Frontmatter field definitions for pages

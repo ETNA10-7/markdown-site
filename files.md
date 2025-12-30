@@ -169,6 +169,7 @@ Markdown files with frontmatter for blog posts. Each file becomes a blog post.
 | `blogFeatured`  | Show as featured on blog page (optional, first becomes hero, rest in 2-column row) |
 | `newsletter`    | Override newsletter signup display (optional, true/false) |
 | `contactForm`   | Enable contact form on this post (optional). Requires siteConfig.contactForm.enabled: true and AGENTMAIL_API_KEY/AGENTMAIL_INBOX environment variables. |
+| `unlisted`      | Hide from listings but allow direct access via slug (optional). Set `true` to hide from blog listings, featured sections, tag pages, search results, and related posts. Post remains accessible via direct link. |
 
 ## Static Pages (`content/pages/`)
 

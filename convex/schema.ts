@@ -28,6 +28,7 @@ export default defineSchema({
     blogFeatured: v.optional(v.boolean()), // Show as hero featured post on /blog page
     newsletter: v.optional(v.boolean()), // Override newsletter signup display (true/false)
     contactForm: v.optional(v.boolean()), // Enable contact form on this post
+    unlisted: v.optional(v.boolean()), // Hide from listings but allow direct access via slug
     lastSyncedAt: v.number(),
   })
     .index("by_slug", ["slug"])

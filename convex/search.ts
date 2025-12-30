@@ -72,6 +72,9 @@ export const search = query({
       if (seenPostIds.has(post._id)) continue;
       seenPostIds.add(post._id);
 
+      // Skip unlisted posts
+      if (post.unlisted) continue;
+
       // Create snippet from content and find anchor
       const { snippet, anchor } = createSnippet(post.content, args.query, 120);
 

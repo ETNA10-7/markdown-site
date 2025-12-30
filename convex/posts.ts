@@ -86,8 +86,11 @@ export const getAllPosts = query({
       .withIndex("by_published", (q) => q.eq("published", true))
       .collect();
 
+    // Filter out unlisted posts
+    const listedPosts = posts.filter((p) => !p.unlisted);
+
     // Sort by date descending
-    const sortedPosts = posts.sort(
+    const sortedPosts = listedPosts.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
 
@@ -143,7 +146,7 @@ export const getBlogFeaturedPosts = query({
 
     // Filter to only published posts and sort by date descending
     const publishedFeatured = posts
-      .filter((p) => p.published)
+      .filter((p) => p.published && !p.unlisted)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return publishedFeatured.map((post) => ({
@@ -184,7 +187,7 @@ export const getFeaturedPosts = query({
 
     // Filter to only published posts and sort by featuredOrder
     const featuredPosts = posts
-      .filter((p) => p.published)
+      .filter((p) => p.published && !p.unlisted)
       .sort((a, b) => {
         const orderA = a.featuredOrder ?? 999;
         const orderB = b.featuredOrder ?? 999;
@@ -335,9 +338,9 @@ export const getRecentPostsInternal = internalQuery({
       .withIndex("by_published", (q) => q.eq("published", true))
       .collect();
 
-    // Filter posts by date and sort descending
+    // Filter posts by date and sort descending, excluding unlisted
     const recentPosts = posts
-      .filter((post) => post.date >= args.since)
+      .filter((post) => post.date >= args.since && !post.unlisted)
       .sort((a, b) => b.date.localeCompare(a.date))
       .map((post) => ({
         slug: post.slug,
@@ -617,9 +620,12 @@ export const getAllTags = query({
       .withIndex("by_published", (q) => q.eq("published", true))
       .collect();
 
+    // Filter out unlisted posts
+    const listedPosts = posts.filter((p) => !p.unlisted);
+
     // Count occurrences of each tag
     const tagCounts = new Map<string, number>();
-    for (const post of posts) {
+    for (const post of listedPosts) {
       for (const tag of post.tags) {
         tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
       }
@@ -665,9 +671,11 @@ export const getPostsByTag = query({
       .withIndex("by_published", (q) => q.eq("published", true))
       .collect();
 
-    // Filter posts that have the specified tag
-    const filteredPosts = posts.filter((post) =>
-      post.tags.some((t) => t.toLowerCase() === args.tag.toLowerCase()),
+    // Filter posts that have the specified tag and are not unlisted
+    const filteredPosts = posts.filter(
+      (post) =>
+        !post.unlisted &&
+        post.tags.some((t) => t.toLowerCase() === args.tag.toLowerCase()),
     );
 
     // Sort by date descending
@@ -728,9 +736,9 @@ export const getRelatedPosts = query({
       .withIndex("by_published", (q) => q.eq("published", true))
       .collect();
 
-    // Find posts that share tags, excluding current post
+    // Find posts that share tags, excluding current post and unlisted posts
     const relatedPosts = posts
-      .filter((post) => post.slug !== args.currentSlug)
+      .filter((post) => post.slug !== args.currentSlug && !post.unlisted)
       .map((post) => {
         const sharedTags = post.tags.filter((tag) =>
           args.tags.some((t) => t.toLowerCase() === tag.toLowerCase()),

@@ -35,6 +35,7 @@ Location: `content/blog/*.md`
 | blogFeatured | boolean | false | Hero featured on /blog page |
 | newsletter | boolean | - | Override newsletter signup |
 | contactForm | boolean | false | Enable contact form |
+| unlisted | boolean | false | Hide from listings but allow direct access via slug |
 | showFooter | boolean | - | Override footer display |
 | footer | string | - | Custom footer markdown |
 | showSocialFooter | boolean | - | Override social footer |
@@ -140,6 +141,15 @@ rightSidebar: true
 ```yaml
 showInNav: false
 ```
+
+### Unlisted post (hidden from listings)
+
+```yaml
+published: true
+unlisted: true
+```
+
+Post remains accessible via direct link but hidden from all listings, search, and related posts.
 
 ### Enable contact form
 

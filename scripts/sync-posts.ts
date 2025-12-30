@@ -73,6 +73,7 @@ interface ParsedPost {
   blogFeatured?: boolean; // Show as hero featured post on /blog page
   newsletter?: boolean; // Override newsletter signup display (true/false)
   contactForm?: boolean; // Enable contact form on this post
+  unlisted?: boolean; // Hide from listings but allow direct access via slug
 }
 
 // Page frontmatter (for static pages like About, Projects, Contact)
@@ -172,6 +173,7 @@ function parseMarkdownFile(filePath: string): ParsedPost | null {
       blogFeatured: frontmatter.blogFeatured, // Show as hero featured post on /blog page
       newsletter: frontmatter.newsletter, // Override newsletter signup display
       contactForm: frontmatter.contactForm, // Enable contact form on this post
+      unlisted: frontmatter.unlisted, // Hide from listings but allow direct access
     };
   } catch (error) {
     console.error(`Error parsing ${filePath}:`, error);
