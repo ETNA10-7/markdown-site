@@ -99,10 +99,15 @@ export default function AIChatView({
     initChat();
   }, [sessionId, contextId, getOrCreateChat]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive (only if there are messages)
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    // Only scroll if there are actual messages (don't scroll on initial empty state)
+    if (messagesEndRef.current && chat?.messages && chat.messages.length > 0) {
+      // Use scrollTo on the parent container instead of scrollIntoView to avoid page scroll
+      const messagesContainer = messagesEndRef.current.parentElement;
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
     }
   }, [chat?.messages]);
 

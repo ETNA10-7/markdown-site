@@ -3,6 +3,7 @@ title: "Changelog"
 slug: "changelog"
 published: true
 order: 5
+rightSidebar: true
 layout: "sidebar"
 ---
 
@@ -190,6 +191,7 @@ Released December 29, 2025
 - Works with all four themes (dark, light, tan, cloud)
 
 Updated files: `src/components/ContactForm.tsx`, `src/components/NewsletterSignup.tsx`
+
 - Honeypot fields use CSS positioning (position: absolute, left: -9999px) to hide from users
 - Fields include aria-hidden="true" and tabIndex={-1} for accessibility
 - Different field names per form (website/fax) to avoid pattern detection

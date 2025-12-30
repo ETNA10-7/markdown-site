@@ -7,6 +7,11 @@ import { FontProvider } from "./context/FontContext";
 import { isWorkOSConfigured } from "./utils/workos";
 import "./styles/global.css";
 
+// Disable browser scroll restoration to prevent scroll position being restored on navigation
+if ("scrollRestoration" in window.history) {
+  window.history.scrollRestoration = "manual";
+}
+
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 
 // Lazy load the appropriate App wrapper based on WorkOS configuration

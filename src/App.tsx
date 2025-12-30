@@ -10,6 +10,7 @@ import NewsletterAdmin from "./pages/NewsletterAdmin";
 import Dashboard from "./pages/Dashboard";
 import Callback from "./pages/Callback";
 import Layout from "./components/Layout";
+import ScrollToTopOnNav from "./components/ScrollToTopOnNav";
 import { usePageTracking } from "./hooks/usePageTracking";
 import { SidebarProvider } from "./context/SidebarContext";
 import siteConfig from "./config/siteConfig";
@@ -45,6 +46,7 @@ function App() {
 
   return (
     <SidebarProvider>
+      <ScrollToTopOnNav />
       <Layout>
         <Routes>
           {/* Homepage route - either default Home or custom page/post */}
