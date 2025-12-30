@@ -635,7 +635,7 @@ Created by [Wayne](https://x.com/waynesutton) with Convex, Cursor, and Claude Op
   // WARNING: When requireAuth is false, anyone can access the dashboard
   dashboard: {
     enabled: true,
-    requireAuth: false,
+    requireAuth: true,
   },
 
   // Image lightbox configuration
