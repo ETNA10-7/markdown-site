@@ -11,10 +11,20 @@ import NewsletterSignup from "./NewsletterSignup";
 import ContactForm from "./ContactForm";
 import siteConfig from "../config/siteConfig";
 
-// Sanitize schema that allows collapsible sections (details/summary) and inline styles
+// Whitelisted domains for iframe embeds (YouTube and Twitter/X only)
+const ALLOWED_IFRAME_DOMAINS = [
+  "youtube.com",
+  "www.youtube.com",
+  "youtube-nocookie.com",
+  "www.youtube-nocookie.com",
+  "platform.twitter.com",
+  "platform.x.com",
+];
+
+// Sanitize schema that allows collapsible sections (details/summary), inline styles, and iframes
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames || []), "details", "summary"],
+  tagNames: [...(defaultSchema.tagNames || []), "details", "summary", "iframe"],
   attributes: {
     ...defaultSchema.attributes,
     details: ["open"], // Allow the 'open' attribute for expanded by default
@@ -28,6 +38,7 @@ const sanitizeSchema = {
       ...(defaultSchema.attributes?.img || []),
       "style",
     ], // Allow inline styles on images
+    iframe: ["src", "width", "height", "allow", "allowfullscreen", "frameborder", "title", "style"], // Allow iframe with specific attributes
   },
 };
 
@@ -661,6 +672,32 @@ export default function BlogPost({ content, slug, pageType = "post" }: BlogPostP
         td({ children }) {
           return <td className="blog-td">{children}</td>;
         },
+        // Iframe component with domain whitelisting for YouTube and Twitter/X
+        iframe(props) {
+          const src = props.src as string;
+          if (!src) return null;
+
+          try {
+            const url = new URL(src);
+            const isAllowed = ALLOWED_IFRAME_DOMAINS.some(
+              (domain) =>
+                url.hostname === domain || url.hostname.endsWith("." + domain)
+            );
+            if (!isAllowed) return null;
+
+            return (
+              <div className="embed-container">
+                <iframe
+                  {...props}
+                  sandbox="allow-scripts allow-same-origin allow-popups"
+                  loading="lazy"
+                />
+              </div>
+            );
+          } catch {
+            return null;
+          }
+        },
       }}
     >
       {markdownContent}
@@ -900,6 +937,32 @@ export default function BlogPost({ content, slug, pageType = "post" }: BlogPostP
           },
           td({ children }) {
             return <td className="blog-td">{children}</td>;
+          },
+          // Iframe component with domain whitelisting for YouTube and Twitter/X
+          iframe(props) {
+            const src = props.src as string;
+            if (!src) return null;
+
+            try {
+              const url = new URL(src);
+              const isAllowed = ALLOWED_IFRAME_DOMAINS.some(
+                (domain) =>
+                  url.hostname === domain || url.hostname.endsWith("." + domain)
+              );
+              if (!isAllowed) return null;
+
+              return (
+                <div className="embed-container">
+                  <iframe
+                    {...props}
+                    sandbox="allow-scripts allow-same-origin allow-popups"
+                    loading="lazy"
+                  />
+                </div>
+              );
+            } catch {
+              return null;
+            }
           },
           }}
         >

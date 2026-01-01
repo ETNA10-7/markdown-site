@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.4.0] - 2026-01-01
+
+### Added
+
+- YouTube and Twitter/X embed support with domain whitelisting
+  - Embed YouTube videos and Twitter/X posts directly in markdown
+  - Domain whitelisting for security (only trusted domains allowed)
+  - Whitelisted domains: `youtube.com`, `www.youtube.com`, `youtube-nocookie.com`, `www.youtube-nocookie.com`, `platform.twitter.com`, `platform.x.com`
+  - Auto-adds `sandbox="allow-scripts allow-same-origin allow-popups"` for security
+  - Auto-adds `loading="lazy"` for performance
+  - Non-whitelisted iframes silently blocked
+  - Works on both blog posts and pages
+- Embeds section in markdown-with-code-examples.md with YouTube and Twitter/X examples
+
+### Technical
+
+- Added `ALLOWED_IFRAME_DOMAINS` constant in `src/components/BlogPost.tsx`
+- Added `iframe` to sanitize schema tagNames with allowed attributes (`src`, `width`, `height`, `allow`, `allowfullscreen`, `frameborder`, `title`, `style`)
+- Added custom `iframe` component handler with URL validation against whitelisted domains
+- Added `.embed-container` CSS styles to `src/styles/global.css` for responsive embeds
+
 ## [2.3.0] - 2025-12-31
 
 ### Added

@@ -327,6 +327,68 @@ For best results:
 - Author avatars: 200x200px (displays as circle)
 - Card thumbnails: Square images work best (auto-cropped to center)
 
+## Embeds
+
+Embed YouTube videos and Twitter/X posts directly in your markdown. Only YouTube and Twitter/X domains are allowed for security.
+
+### YouTube
+
+Embed a YouTube video using an iframe:
+
+```html
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+  title="YouTube video"
+  allowfullscreen>
+</iframe>
+```
+
+Result:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video" allowfullscreen></iframe>
+
+### Twitter/X
+
+Embed a tweet using the Twitter embed URL:
+
+```html
+<iframe
+  src="https://platform.twitter.com/embed/Tweet.html?id=20"
+  width="550"
+  height="250">
+</iframe>
+```
+
+Result:
+
+<iframe src="https://platform.twitter.com/embed/Tweet.html?id=20" width="550" height="250"></iframe>
+
+### Privacy-enhanced YouTube
+
+Use `youtube-nocookie.com` for privacy-enhanced embeds:
+
+```html
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
+  title="YouTube video"
+  allowfullscreen>
+</iframe>
+```
+
+### Allowed domains
+
+For security, only these domains are whitelisted:
+
+- `youtube.com`, `www.youtube.com`
+- `youtube-nocookie.com`, `www.youtube-nocookie.com`
+- `platform.twitter.com`, `platform.x.com`
+
+Iframes from other domains are silently blocked.
+
 ## Nested lists
 
 Indent with two spaces for nested items:

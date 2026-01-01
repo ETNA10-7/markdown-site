@@ -10,6 +10,29 @@ layout: "sidebar"
 All notable changes to this project.
 ![](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+## v2.4.0
+
+Released January 1, 2026
+
+**YouTube and Twitter/X embed support**
+
+- Embed YouTube videos and Twitter/X posts directly in markdown
+  - Domain whitelisting for security (only trusted domains allowed)
+  - Whitelisted domains: `youtube.com`, `www.youtube.com`, `youtube-nocookie.com`, `www.youtube-nocookie.com`, `platform.twitter.com`, `platform.x.com`
+  - Auto-adds `sandbox` and `loading="lazy"` attributes for security
+  - Non-whitelisted iframes silently blocked
+  - Works on both blog posts and pages
+- Embeds section added to markdown-with-code-examples.md with usage examples
+
+**Technical details:**
+
+- Added `ALLOWED_IFRAME_DOMAINS` constant in `src/components/BlogPost.tsx`
+- Added `iframe` to sanitize schema with allowed attributes
+- Added custom iframe component handler with URL validation
+- Added `.embed-container` CSS styles for responsive embeds
+
+Updated files: `src/components/BlogPost.tsx`, `src/styles/global.css`, `content/blog/markdown-with-code-examples.md`, `files.md`, `TASK.md`, `changelog.md`, `content/pages/changelog-page.md`
+
 ## v2.3.0
 
 Released December 31, 2025

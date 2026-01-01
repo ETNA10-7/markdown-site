@@ -2,14 +2,25 @@
 
 ## To Do
 
-- [x] Link author name to author page with post list
 - [ ] site confg add header icons
+- [ ] fix site confg link
 
 ## Current Status
 
-v2.3.0 ready. Author pages feature. Links authorName to `/author/:authorSlug` archive pages displaying all posts by that author. Follows existing tag pages pattern.
+v2.4.0 ready. YouTube and Twitter/X embed support with domain whitelisting.
 
 ## Completed
+
+- [x] YouTube and Twitter/X embed support with domain whitelisting
+  - [x] Added `ALLOWED_IFRAME_DOMAINS` constant for whitelisted domains (YouTube, Twitter/X)
+  - [x] Added `iframe` to sanitize schema with allowed attributes
+  - [x] Added custom iframe component handler with domain validation
+  - [x] Auto-adds `sandbox` and `loading="lazy"` attributes for security
+  - [x] Non-whitelisted iframes silently blocked
+  - [x] Added `.embed-container` CSS styles for responsive embeds
+  - [x] Updated markdown-with-code-examples.md with Embeds section
+  - [x] Works on both blog posts and pages
+  - [x] Updated files.md, TASK.md, changelog.md, changelog-page.md
 
 - [x] Author pages at `/author/:authorSlug` with post list
   - [x] Added `by_authorName` index to posts table in convex/schema.ts

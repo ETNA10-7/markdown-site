@@ -17,7 +17,7 @@ import { useState, useEffect } from "react";
 import siteConfig from "../config/siteConfig";
 
 // Site configuration
-const SITE_URL = "https://markdown.fast";
+const SITE_URL = "https://wwwmarkdown.fast";
 const SITE_NAME = "markdown sync framework";
 const DEFAULT_OG_IMAGE = "/images/og-default.svg";
 
@@ -36,14 +36,14 @@ export default function Post({
   const navigate = useNavigate();
   const location = useLocation();
   const { setHeadings, setActiveId } = useSidebar();
-  
+
   // Use prop slug if provided (for homepage), otherwise use route slug
   const slug = propSlug || routeSlug;
-  
+
   // Check for page first, then post
   const page = useQuery(api.pages.getPageBySlug, slug ? { slug } : "skip");
   const post = useQuery(api.posts.getPostBySlug, slug ? { slug } : "skip");
-  
+
   // Fetch related posts based on current post's tags (only for blog posts, not pages)
   const relatedPosts = useQuery(
     api.posts.getRelatedPosts,
@@ -51,7 +51,7 @@ export default function Post({
       ? { currentSlug: post.slug, tags: post.tags, limit: 3 }
       : "skip",
   );
-  
+
   const [copied, setCopied] = useState(false);
 
   // Scroll to hash anchor after content loads
@@ -204,17 +204,23 @@ export default function Post({
   // If it's a static page, render simplified view
   if (page) {
     // Extract headings for sidebar TOC (only for pages with layout: "sidebar")
-    const headings = page.layout === "sidebar" ? extractHeadings(page.content) : [];
+    const headings =
+      page.layout === "sidebar" ? extractHeadings(page.content) : [];
     const hasLeftSidebar = headings.length > 0;
     // Check if right sidebar is enabled (only when explicitly set in frontmatter)
-    const hasRightSidebar = siteConfig.rightSidebar.enabled && page.rightSidebar === true;
+    const hasRightSidebar =
+      siteConfig.rightSidebar.enabled && page.rightSidebar === true;
     const hasAnySidebar = hasLeftSidebar || hasRightSidebar;
     // Track if only right sidebar is enabled (for centering article)
     const hasOnlyRightSidebar = hasRightSidebar && !hasLeftSidebar;
 
     return (
-      <div className={`post-page ${hasAnySidebar ? "post-page-with-sidebar" : ""}`}>
-        <nav className={`post-nav ${hasAnySidebar ? "post-nav-with-sidebar" : ""}`}>
+      <div
+        className={`post-page ${hasAnySidebar ? "post-page-with-sidebar" : ""}`}
+      >
+        <nav
+          className={`post-nav ${hasAnySidebar ? "post-nav-with-sidebar" : ""}`}
+        >
           {/* Hide back-button when sidebars are enabled or when used as homepage */}
           {!hasAnySidebar && !isHomepage && (
             <button onClick={() => navigate("/")} className="back-button">
@@ -234,16 +240,23 @@ export default function Post({
           )}
         </nav>
 
-        <div className={`${hasAnySidebar ? "post-content-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-content-right-sidebar-only" : ""}`}>
+        <div
+          className={`${hasAnySidebar ? "post-content-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-content-right-sidebar-only" : ""}`}
+        >
           {/* Left sidebar - TOC */}
           {hasLeftSidebar && (
             <aside className="post-sidebar-wrapper post-sidebar-left">
-              <PageSidebar headings={headings} activeId={location.hash.slice(1)} />
+              <PageSidebar
+                headings={headings}
+                activeId={location.hash.slice(1)}
+              />
             </aside>
           )}
-          
+
           {/* Main content */}
-          <article className={`post-article ${hasAnySidebar ? "post-article-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-article-centered" : ""}`}>
+          <article
+            className={`post-article ${hasAnySidebar ? "post-article-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-article-centered" : ""}`}
+          >
             {/* Display image at top if showImageAtTop is true */}
             {page.showImageAtTop && page.image && (
               <div className="post-header-image">
@@ -297,10 +310,11 @@ export default function Post({
             <BlogPost content={page.content} slug={page.slug} pageType="page" />
 
             {/* Contact form - shown when contactForm: true in frontmatter (only if not inline) */}
-            {siteConfig.contactForm?.enabled && page.contactForm && 
-             !page.content.includes("<!-- contactform -->") && (
-              <ContactForm source={`page:${page.slug}`} />
-            )}
+            {siteConfig.contactForm?.enabled &&
+              page.contactForm &&
+              !page.content.includes("<!-- contactform -->") && (
+                <ContactForm source={`page:${page.slug}`} />
+              )}
 
             {/* Newsletter signup - respects frontmatter override (only if not inline) */}
             {siteConfig.newsletter?.enabled &&
@@ -312,16 +326,18 @@ export default function Post({
               )}
 
             {/* Footer - shown inside article at bottom for pages */}
-            {siteConfig.footer.enabled && 
-             (page.showFooter !== undefined ? page.showFooter : siteConfig.footer.showOnPages) && (
-              <Footer content={page.footer} />
-            )}
+            {siteConfig.footer.enabled &&
+              (page.showFooter !== undefined
+                ? page.showFooter
+                : siteConfig.footer.showOnPages) && (
+                <Footer content={page.footer} />
+              )}
 
             {/* Social footer - shown inside article at bottom for pages */}
-            {siteConfig.socialFooter?.enabled && 
-             (page.showSocialFooter !== undefined ? page.showSocialFooter : siteConfig.socialFooter.showOnPages) && (
-              <SocialFooter />
-            )}
+            {siteConfig.socialFooter?.enabled &&
+              (page.showSocialFooter !== undefined
+                ? page.showSocialFooter
+                : siteConfig.socialFooter.showOnPages) && <SocialFooter />}
           </article>
 
           {/* Right sidebar - with optional AI chat support */}
@@ -370,18 +386,24 @@ export default function Post({
   };
 
   // Extract headings for sidebar TOC (only for posts with layout: "sidebar")
-  const headings = post?.layout === "sidebar" ? extractHeadings(post.content) : [];
+  const headings =
+    post?.layout === "sidebar" ? extractHeadings(post.content) : [];
   const hasLeftSidebar = headings.length > 0;
   // Check if right sidebar is enabled (only when explicitly set in frontmatter)
-  const hasRightSidebar = siteConfig.rightSidebar.enabled && post.rightSidebar === true;
+  const hasRightSidebar =
+    siteConfig.rightSidebar.enabled && post.rightSidebar === true;
   const hasAnySidebar = hasLeftSidebar || hasRightSidebar;
   // Track if only right sidebar is enabled (for centering article)
   const hasOnlyRightSidebar = hasRightSidebar && !hasLeftSidebar;
 
   // Render blog post with full metadata
   return (
-    <div className={`post-page ${hasAnySidebar ? "post-page-with-sidebar" : ""}`}>
-      <nav className={`post-nav ${hasAnySidebar ? "post-nav-with-sidebar" : ""}`}>
+    <div
+      className={`post-page ${hasAnySidebar ? "post-page-with-sidebar" : ""}`}
+    >
+      <nav
+        className={`post-nav ${hasAnySidebar ? "post-nav-with-sidebar" : ""}`}
+      >
         {/* Hide back-button when sidebars are enabled or when used as homepage */}
         {!hasAnySidebar && !isHomepage && (
           <button onClick={() => navigate("/")} className="back-button">
@@ -404,184 +426,201 @@ export default function Post({
         )}
       </nav>
 
-      <div className={`${hasAnySidebar ? "post-content-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-content-right-sidebar-only" : ""}`}>
+      <div
+        className={`${hasAnySidebar ? "post-content-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-content-right-sidebar-only" : ""}`}
+      >
         {/* Left sidebar - TOC */}
         {hasLeftSidebar && (
           <aside className="post-sidebar-wrapper post-sidebar-left">
-            <PageSidebar headings={headings} activeId={location.hash.slice(1)} />
+            <PageSidebar
+              headings={headings}
+              activeId={location.hash.slice(1)}
+            />
           </aside>
         )}
 
-        <article className={`post-article ${hasAnySidebar ? "post-article-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-article-centered" : ""}`}>
-        {/* Display image at top if showImageAtTop is true */}
-        {post.showImageAtTop && post.image && (
-          <div className="post-header-image">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="post-header-image-img"
-            />
-          </div>
-        )}
-        <header className="post-header">
-          <div className="post-title-row">
-            <h1 className="post-title">{post.title}</h1>
-            {/* Show CopyPageDropdown aligned with title when sidebars are enabled */}
-            {hasAnySidebar && (
-              <div className="post-header-actions">
-                <CopyPageDropdown
-                  title={post.title}
-                  content={post.content}
-                  url={window.location.href}
-                  slug={post.slug}
-                  description={post.description}
-                  date={post.date}
-                  tags={post.tags}
-                  readTime={post.readTime}
-                />
-              </div>
-            )}
-          </div>
-          <div className="post-meta-header">
-            {/* Author avatar and name (optional) */}
-            {(post.authorImage || post.authorName) && (
-              <div className="post-author">
-                {post.authorImage && (
-                  <img
-                    src={post.authorImage}
-                    alt={post.authorName || "Author"}
-                    className="post-author-image"
+        <article
+          className={`post-article ${hasAnySidebar ? "post-article-with-sidebar" : ""} ${hasOnlyRightSidebar ? "post-article-centered" : ""}`}
+        >
+          {/* Display image at top if showImageAtTop is true */}
+          {post.showImageAtTop && post.image && (
+            <div className="post-header-image">
+              <img
+                src={post.image}
+                alt={post.title}
+                className="post-header-image-img"
+              />
+            </div>
+          )}
+          <header className="post-header">
+            <div className="post-title-row">
+              <h1 className="post-title">{post.title}</h1>
+              {/* Show CopyPageDropdown aligned with title when sidebars are enabled */}
+              {hasAnySidebar && (
+                <div className="post-header-actions">
+                  <CopyPageDropdown
+                    title={post.title}
+                    content={post.content}
+                    url={window.location.href}
+                    slug={post.slug}
+                    description={post.description}
+                    date={post.date}
+                    tags={post.tags}
+                    readTime={post.readTime}
                   />
-                )}
-                {post.authorName && (
+                </div>
+              )}
+            </div>
+            <div className="post-meta-header">
+              {/* Author avatar and name (optional) */}
+              {(post.authorImage || post.authorName) && (
+                <div className="post-author">
+                  {post.authorImage && (
+                    <img
+                      src={post.authorImage}
+                      alt={post.authorName || "Author"}
+                      className="post-author-image"
+                    />
+                  )}
+                  {post.authorName && (
+                    <Link
+                      to={`/author/${post.authorName.toLowerCase().replace(/\s+/g, "-")}`}
+                      className="post-author-name post-author-link"
+                    >
+                      {post.authorName}
+                    </Link>
+                  )}
+                  <span className="post-meta-separator">·</span>
+                </div>
+              )}
+              <time className="post-date">
+                {format(parseISO(post.date), "MMMM yyyy")}
+              </time>
+              {post.readTime && (
+                <>
+                  <span className="post-meta-separator">·</span>
+                  <span className="post-read-time">{post.readTime}</span>
+                </>
+              )}
+            </div>
+            {post.description && (
+              <p className="post-description">{post.description}</p>
+            )}
+          </header>
+
+          <BlogPost content={post.content} slug={post.slug} pageType="post" />
+
+          <footer className="post-footer">
+            <div className="post-share">
+              <button
+                onClick={handleCopyLink}
+                className="share-button"
+                aria-label="Copy link"
+              >
+                <LinkIcon size={16} />
+                <span>{copied ? "Copied!" : "Copy link"}</span>
+              </button>
+              <button
+                onClick={handleShareTwitter}
+                className="share-button"
+                aria-label="Share on Twitter"
+              >
+                <Twitter size={16} />
+                <span>Tweet</span>
+              </button>
+              <a
+                href="/rss.xml"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="share-button"
+                aria-label="RSS Feed"
+              >
+                <Rss size={16} />
+                <span>RSS</span>
+              </a>
+            </div>
+
+            {post.tags && post.tags.length > 0 && (
+              <div className="post-tags">
+                <Tag size={14} className="post-tags-icon" aria-hidden="true" />
+                {post.tags.map((tag) => (
                   <Link
-                    to={`/author/${post.authorName.toLowerCase().replace(/\s+/g, "-")}`}
-                    className="post-author-name post-author-link"
+                    key={tag}
+                    to={`/tags/${encodeURIComponent(tag.toLowerCase())}`}
+                    className="post-tag post-tag-link"
                   >
-                    {post.authorName}
+                    {tag}
                   </Link>
-                )}
-                <span className="post-meta-separator">·</span>
+                ))}
               </div>
             )}
-            <time className="post-date">
-              {format(parseISO(post.date), "MMMM yyyy")}
-            </time>
-            {post.readTime && (
-              <>
-                <span className="post-meta-separator">·</span>
-                <span className="post-read-time">{post.readTime}</span>
-              </>
-            )}
-          </div>
-          {post.description && (
-            <p className="post-description">{post.description}</p>
-          )}
-        </header>
 
-        <BlogPost content={post.content} slug={post.slug} pageType="post" />
-
-        <footer className="post-footer">
-          <div className="post-share">
-            <button
-              onClick={handleCopyLink}
-              className="share-button"
-              aria-label="Copy link"
-            >
-              <LinkIcon size={16} />
-              <span>{copied ? "Copied!" : "Copy link"}</span>
-            </button>
-            <button
-              onClick={handleShareTwitter}
-              className="share-button"
-              aria-label="Share on Twitter"
-            >
-              <Twitter size={16} />
-              <span>Tweet</span>
-            </button>
-            <a
-              href="/rss.xml"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="share-button"
-              aria-label="RSS Feed"
-            >
-              <Rss size={16} />
-              <span>RSS</span>
-            </a>
-          </div>
-
-          {post.tags && post.tags.length > 0 && (
-            <div className="post-tags">
-              <Tag size={14} className="post-tags-icon" aria-hidden="true" />
-              {post.tags.map((tag) => (
-                <Link
-                  key={tag}
-                  to={`/tags/${encodeURIComponent(tag.toLowerCase())}`}
-                  className="post-tag post-tag-link"
-                >
-                  {tag}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Related posts section - only shown for blog posts with shared tags */}
-          {relatedPosts && relatedPosts.length > 0 && (
-            <div className="related-posts">
-              <h3 className="related-posts-title">Related Posts</h3>
-              <ul className="related-posts-list">
-                {relatedPosts.map((relatedPost) => (
-                  <li key={relatedPost.slug} className="related-post-item">
-                    <Link to={`/${relatedPost.slug}`} className="related-post-link">
-                      <span className="related-post-title">{relatedPost.title}</span>
-                      {relatedPost.readTime && (
-                        <span className="related-post-meta">{relatedPost.readTime}</span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Newsletter signup - respects frontmatter override (only if not inline) */}
-          {siteConfig.newsletter?.enabled &&
-            (post.newsletter !== undefined
-              ? post.newsletter
-              : siteConfig.newsletter.signup.posts.enabled) &&
-            !post.content.includes("<!-- newsletter -->") && (
-              <NewsletterSignup source="post" postSlug={post.slug} />
+            {/* Related posts section - only shown for blog posts with shared tags */}
+            {relatedPosts && relatedPosts.length > 0 && (
+              <div className="related-posts">
+                <h3 className="related-posts-title">Related Posts</h3>
+                <ul className="related-posts-list">
+                  {relatedPosts.map((relatedPost) => (
+                    <li key={relatedPost.slug} className="related-post-item">
+                      <Link
+                        to={`/${relatedPost.slug}`}
+                        className="related-post-link"
+                      >
+                        <span className="related-post-title">
+                          {relatedPost.title}
+                        </span>
+                        {relatedPost.readTime && (
+                          <span className="related-post-meta">
+                            {relatedPost.readTime}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
-          {/* Contact form - shown when contactForm: true in frontmatter (only if not inline) */}
-          {siteConfig.contactForm?.enabled && post.contactForm && 
-           !post.content.includes("<!-- contactform -->") && (
-            <ContactForm source={`post:${post.slug}`} />
-          )}
-        </footer>
+            {/* Newsletter signup - respects frontmatter override (only if not inline) */}
+            {siteConfig.newsletter?.enabled &&
+              (post.newsletter !== undefined
+                ? post.newsletter
+                : siteConfig.newsletter.signup.posts.enabled) &&
+              !post.content.includes("<!-- newsletter -->") && (
+                <NewsletterSignup source="post" postSlug={post.slug} />
+              )}
 
-        {/* Footer - shown inside article at bottom for posts */}
-        {siteConfig.footer.enabled && 
-         (post.showFooter !== undefined ? post.showFooter : siteConfig.footer.showOnPosts) && (
-          <Footer content={post.footer} />
+            {/* Contact form - shown when contactForm: true in frontmatter (only if not inline) */}
+            {siteConfig.contactForm?.enabled &&
+              post.contactForm &&
+              !post.content.includes("<!-- contactform -->") && (
+                <ContactForm source={`post:${post.slug}`} />
+              )}
+          </footer>
+
+          {/* Footer - shown inside article at bottom for posts */}
+          {siteConfig.footer.enabled &&
+            (post.showFooter !== undefined
+              ? post.showFooter
+              : siteConfig.footer.showOnPosts) && (
+              <Footer content={post.footer} />
+            )}
+
+          {/* Social footer - shown inside article at bottom for posts */}
+          {siteConfig.socialFooter?.enabled &&
+            (post.showSocialFooter !== undefined
+              ? post.showSocialFooter
+              : siteConfig.socialFooter.showOnPosts) && <SocialFooter />}
+        </article>
+
+        {/* Right sidebar - with optional AI chat support */}
+        {hasRightSidebar && (
+          <RightSidebar
+            aiChatEnabled={post.aiChat}
+            pageContent={post.content}
+            slug={post.slug}
+          />
         )}
-
-        {/* Social footer - shown inside article at bottom for posts */}
-        {siteConfig.socialFooter?.enabled && 
-         (post.showSocialFooter !== undefined ? post.showSocialFooter : siteConfig.socialFooter.showOnPosts) && (
-          <SocialFooter />
-        )}
-      </article>
-
-      {/* Right sidebar - with optional AI chat support */}
-      {hasRightSidebar && (
-        <RightSidebar
-          aiChatEnabled={post.aiChat}
-          pageContent={post.content}
-          slug={post.slug}
-        />
-      )}
       </div>
     </div>
   );
