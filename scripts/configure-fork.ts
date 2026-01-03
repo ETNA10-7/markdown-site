@@ -809,16 +809,16 @@ function updateAiPluginJson(config: ForkConfig): void {
   console.log(`  Updated: public/.well-known/ai-plugin.json`);
 }
 
-// Update src/context/ThemeContext.tsx
-function updateThemeContext(config: ForkConfig): void {
+// Update default theme in siteConfig.ts
+function updateThemeConfig(config: ForkConfig): void {
   if (!config.theme) return;
 
-  console.log("\nUpdating src/context/ThemeContext.tsx...");
+  console.log("\nUpdating default theme in src/config/siteConfig.ts...");
 
-  updateFile("src/context/ThemeContext.tsx", [
+  updateFile("src/config/siteConfig.ts", [
     {
-      search: /const DEFAULT_THEME: Theme = "(?:dark|light|tan|cloud)";/,
-      replace: `const DEFAULT_THEME: Theme = "${config.theme}";`,
+      search: /defaultTheme: "(?:dark|light|tan|cloud)"/,
+      replace: `defaultTheme: "${config.theme}"`,
     },
   ]);
 }
@@ -844,7 +844,7 @@ function main(): void {
   updateRobotsTxt(config);
   updateOpenApiYaml(config);
   updateAiPluginJson(config);
-  updateThemeContext(config);
+  updateThemeConfig(config);
 
   console.log("\n=========================");
   console.log("Configuration complete!");

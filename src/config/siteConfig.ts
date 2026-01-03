@@ -80,6 +80,11 @@ export interface GitHubRepoConfig {
 // default font family options: "serif" (New York), "sans" (system fonts), "monospace" (IBM Plex Mono)
 export type FontFamily = "serif" | "sans" | "monospace";
 
+// Theme configuration
+// Controls the default color theme for the site
+// Options: "dark", "light", "tan", "cloud"
+export type Theme = "dark" | "light" | "tan" | "cloud";
+
 // Right sidebar configuration
 // Shows CopyPageDropdown in a right sidebar on posts/pages at 1135px+ viewport width
 export interface RightSidebarConfig {
@@ -274,6 +279,9 @@ export interface SiteConfig {
   // Font family configuration
   fontFamily: FontFamily;
 
+  // Default theme configuration
+  defaultTheme?: Theme;
+
   // Featured section configuration
   featuredViewMode: "cards" | "list";
   featuredTitle: string; // Featured section title (e.g., "Get started:", "Featured", "Popular")
@@ -373,6 +381,10 @@ export const siteConfig: SiteConfig = {
   // Font family configuration
   // Options: "serif" (New York), "sans" (system fonts), "monospace" (IBM Plex Mono)
   fontFamily: "sans",
+
+  // Default theme configuration
+  // Options: "dark", "light", "tan", "cloud"
+  defaultTheme: "tan",
 
   // Featured section configuration
   // viewMode: 'list' shows bullet list, 'cards' shows card grid with excerpts

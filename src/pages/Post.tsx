@@ -13,7 +13,8 @@ import ContactForm from "../components/ContactForm";
 import { extractHeadings } from "../utils/extractHeadings";
 import { useSidebar } from "../context/SidebarContext";
 import { format, parseISO } from "date-fns";
-import { ArrowLeft, Link as LinkIcon, Twitter, Rss, Tag } from "lucide-react";
+import { ArrowLeft, Link as LinkIcon, Rss, Tag } from "lucide-react";
+import { XLogo, LinkedinLogo } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
 import siteConfig from "../config/siteConfig";
 
@@ -452,6 +453,14 @@ export default function Post({
     );
   };
 
+  const handleShareLinkedIn = () => {
+    const url = encodeURIComponent(window.location.href);
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+      "_blank",
+    );
+  };
+
   // Check if this post should use docs layout
   if (post.docsSection && siteConfig.docsSection?.enabled) {
     const docsHeadings = extractHeadings(post.content);
@@ -639,10 +648,18 @@ export default function Post({
               <button
                 onClick={handleShareTwitter}
                 className="share-button"
-                aria-label="Share on Twitter"
+                aria-label="Share on X"
               >
-                <Twitter size={16} />
-                <span>Tweet</span>
+                <XLogo size={16} weight="bold" />
+                <span>Post</span>
+              </button>
+              <button
+                onClick={handleShareLinkedIn}
+                className="share-button"
+                aria-label="Share on LinkedIn"
+              >
+                <LinkedinLogo size={16} weight="bold" />
+                <span>LinkedIn</span>
               </button>
               <a
                 href="/rss.xml"

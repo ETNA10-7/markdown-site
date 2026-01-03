@@ -9,9 +9,22 @@
 
 ## Current Status
 
-v2.8.0 ready. Docs sidebar group icons via frontmatter.
+v2.8.1 ready. Centralized defaultTheme in siteConfig.ts.
 
 ## Completed
+
+- [x] Centralize defaultTheme in siteConfig.ts
+  - [x] Added `defaultTheme` field to siteConfig.ts (type: `Theme`)
+  - [x] Added `Theme` type export to siteConfig.ts
+  - [x] Updated ThemeContext.tsx to import and use siteConfig.defaultTheme
+  - [x] Updated configure-fork.ts to update siteConfig.ts instead of ThemeContext.tsx
+  - [x] Renamed `updateThemeContext` to `updateThemeConfig` in configure-fork.ts
+  - [x] Updated docs.md Theme section with new siteConfig.ts example
+  - [x] Updated setup-guide.md "Change the Default Theme" section
+  - [x] Updated FORK_CONFIG.md with new theme configuration instructions
+  - [x] Updated fork-configuration-guide.md with siteConfig.ts reference
+  - [x] Backward compatible: falls back to "tan" if defaultTheme not set
+
 
 - [x] Docs sidebar group icons via frontmatter
   - [x] Added `docsSectionGroupIcon` frontmatter field for posts and pages

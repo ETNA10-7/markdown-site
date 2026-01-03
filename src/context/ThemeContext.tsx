@@ -1,10 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { siteConfig, Theme } from "../config/siteConfig";
 
-// Available theme options
-type Theme = "dark" | "light" | "tan" | "cloud";
-
-// Default theme for new users (tan matches warm aesthetic)
-const DEFAULT_THEME: Theme = "tan";
+// Default theme for new users (reads from siteConfig, falls back to "tan")
+const DEFAULT_THEME: Theme = siteConfig.defaultTheme || "tan";
 
 interface ThemeContextType {
   theme: Theme;

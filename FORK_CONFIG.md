@@ -61,7 +61,8 @@ This updates all 11 configuration files automatically:
 - `public/robots.txt`
 - `public/openapi.yaml`
 - `public/.well-known/ai-plugin.json`
-- `src/context/ThemeContext.tsx`
+
+Theme is now configured in `src/config/siteConfig.ts` (via the `defaultTheme` field).
 
 ### Step 4: Review and deploy
 
@@ -92,7 +93,7 @@ Edit each file individually following the guide below.
 | `public/robots.txt`                 | Sitemap URL                                                  |
 | `public/openapi.yaml`               | Server URL, site name                                        |
 | `public/.well-known/ai-plugin.json` | Plugin metadata                                              |
-| `src/context/ThemeContext.tsx`      | Default theme                                                |
+| `src/config/siteConfig.ts`          | Default theme (`defaultTheme` field)                         |
 
 ---
 
@@ -423,12 +424,15 @@ Update plugin metadata:
 }
 ```
 
-### 11. src/context/ThemeContext.tsx
+### 11. Default Theme (in siteConfig.ts)
 
-Change the default theme (line 21):
+Change the default theme in `src/config/siteConfig.ts`:
 
 ```typescript
-const DEFAULT_THEME: Theme = "tan"; // Options: dark, light, tan, cloud
+export const siteConfig: SiteConfig = {
+  // ... other config
+  defaultTheme: "tan", // Options: "dark", "light", "tan", "cloud"
+};
 ```
 
 ---

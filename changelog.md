@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [2.8.1] - 2026-01-03
+
+### Changed
+
+- Centralized `defaultTheme` configuration in `siteConfig.ts`
+  - Theme is now configured via `defaultTheme` field in siteConfig instead of ThemeContext.tsx
+  - ThemeContext.tsx now imports and uses `siteConfig.defaultTheme` with fallback to "tan"
+  - Fork configuration script (`configure-fork.ts`) now updates siteConfig.ts for theme changes
+  - Backward compatible: existing sites work without changes
+
+### Technical
+
+- Added `Theme` type export to `src/config/siteConfig.ts`
+- Added `defaultTheme?: Theme` field to SiteConfig interface
+- Updated `src/context/ThemeContext.tsx` to import from siteConfig
+- Renamed `updateThemeContext` to `updateThemeConfig` in `scripts/configure-fork.ts`
+- Updated documentation: `docs.md`, `setup-guide.md`, `FORK_CONFIG.md`, `fork-configuration-guide.md`
+
 ## [2.8.0] - 2026-01-03
 
 ### Added

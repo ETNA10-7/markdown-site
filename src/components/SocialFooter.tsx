@@ -2,7 +2,7 @@ import siteConfig from "../config/siteConfig";
 import type { SocialLink } from "../config/siteConfig";
 import {
   GithubLogo,
-  TwitterLogo,
+  XLogo,
   LinkedinLogo,
   InstagramLogo,
   YoutubeLogo,
@@ -16,7 +16,7 @@ import {
 // Exported for reuse in header social icons
 export const platformIcons: Record<SocialLink["platform"], Icon> = {
   github: GithubLogo,
-  twitter: TwitterLogo,
+  twitter: XLogo,
   linkedin: LinkedinLogo,
   instagram: InstagramLogo,
   youtube: YoutubeLogo,

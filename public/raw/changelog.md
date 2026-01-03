@@ -8,6 +8,36 @@ Date: 2026-01-03
 All notable changes to this project.
 ![](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+## v2.8.1
+
+Released January 3, 2026
+
+**Centralized defaultTheme in siteConfig.ts**
+
+- Theme configuration moved from ThemeContext.tsx to siteConfig.ts
+- New `defaultTheme` field in siteConfig for centralized theme management
+- ThemeContext.tsx now imports theme setting from siteConfig
+- Fork configuration script updated to modify siteConfig.ts
+- Backward compatible: falls back to "tan" if defaultTheme not set
+
+**Configuration example:**
+
+```typescript
+export const siteConfig: SiteConfig = {
+  // ... other config
+  defaultTheme: "tan", // Options: "dark", "light", "tan", "cloud"
+};
+```
+
+**Technical details:**
+
+- Added `Theme` type export to `src/config/siteConfig.ts`
+- Added `defaultTheme?: Theme` field to SiteConfig interface
+- Updated `src/context/ThemeContext.tsx` to import from siteConfig
+- Renamed `updateThemeContext` to `updateThemeConfig` in `scripts/configure-fork.ts`
+
+Updated files: `src/config/siteConfig.ts`, `src/context/ThemeContext.tsx`, `scripts/configure-fork.ts`, `content/pages/docs.md`, `content/blog/setup-guide.md`, `FORK_CONFIG.md`, `content/blog/fork-configuration-guide.md`
+
 ## v2.8.0
 
 Released January 3, 2026

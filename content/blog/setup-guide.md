@@ -551,7 +551,7 @@ Follow the step-by-step guide in `FORK_CONFIG.md` to update each file manually. 
 | `public/robots.txt`                 | Sitemap URL and header comment                                              |
 | `public/openapi.yaml`               | API title, server URL, site name in examples                                |
 | `public/.well-known/ai-plugin.json` | Site name, descriptions                                                     |
-| `src/context/ThemeContext.tsx`      | Default theme                                                               |
+| `src/config/siteConfig.ts`          | Default theme (`defaultTheme` field)                                        |
 
 ### Site title and description metadata
 
@@ -992,10 +992,13 @@ The button uses Phosphor ArrowUp icon and works with all four themes. It uses a 
 
 ### Change the Default Theme
 
-Edit `src/context/ThemeContext.tsx`:
+Configure in `src/config/siteConfig.ts`:
 
 ```typescript
-const DEFAULT_THEME: Theme = "tan"; // Options: "dark", "light", "tan", "cloud"
+export const siteConfig: SiteConfig = {
+  // ... other config
+  defaultTheme: "tan", // Options: "dark", "light", "tan", "cloud"
+};
 ```
 
 ### Change the Font
