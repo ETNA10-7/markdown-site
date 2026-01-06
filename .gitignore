@@ -28,6 +28,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Temporary files
+.tmp
+
 # Fork configuration (user-specific)
 fork-config.json
 

@@ -150,8 +150,28 @@ const STORAGE_KEY = "docs-sidebar-expanded-state";
 
 export default function DocsSidebar({ currentSlug, isMobile }: DocsSidebarProps) {
   const location = useLocation();
+  // Workaround: Use getAllPages and filter if getDocsPages is not available (Convex sync issue)
+  const allPagesForDocs = useQuery(api.pages.getAllPages);
+  const docsPages = allPagesForDocs
+    ? allPagesForDocs
+        .filter((p) => p.docsSection === true && p.published)
+        .map((p) => ({
+          _id: p._id,
+          slug: p.slug,
+          title: p.title,
+          docsSectionGroup: p.docsSectionGroup,
+          docsSectionOrder: p.docsSectionOrder,
+          docsSectionGroupOrder: p.docsSectionGroupOrder,
+          docsSectionGroupIcon: p.docsSectionGroupIcon,
+        }))
+        .sort((a, b) => {
+          const orderA = a.docsSectionOrder ?? 999;
+          const orderB = b.docsSectionOrder ?? 999;
+          if (orderA !== orderB) return orderA - orderB;
+          return a.title.localeCompare(b.title);
+        })
+    : undefined;
   const docsPosts = useQuery(api.posts.getDocsPosts);
-  const docsPages = useQuery(api.pages.getDocsPages);
 
   // Combine posts and pages
   const allDocsItems = useMemo(() => {

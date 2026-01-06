@@ -6,7 +6,8 @@ const postDataValidator = v.object({
   slug: v.string(),
   title: v.string(),
   description: v.string(),
-  content: v.string(),
+  contentCid: v.string(),
+  storageType: v.union(v.literal("ipfs")),
   date: v.string(),
   published: v.boolean(),
   tags: v.array(v.string()),
@@ -40,7 +41,8 @@ const postDataValidator = v.object({
 const pageDataValidator = v.object({
   slug: v.string(),
   title: v.string(),
-  content: v.string(),
+  contentCid: v.string(),
+  storageType: v.union(v.literal("ipfs")),
   published: v.boolean(),
   order: v.optional(v.number()),
   showInNav: v.optional(v.boolean()),
@@ -101,7 +103,8 @@ export const updatePost = mutation({
       slug: v.optional(v.string()),
       title: v.optional(v.string()),
       description: v.optional(v.string()),
-      content: v.optional(v.string()),
+      contentCid: v.optional(v.string()),
+      storageType: v.optional(v.union(v.literal("ipfs"))),
       date: v.optional(v.string()),
       published: v.optional(v.boolean()),
       tags: v.optional(v.array(v.string())),
@@ -206,7 +209,8 @@ export const updatePage = mutation({
     page: v.object({
       slug: v.optional(v.string()),
       title: v.optional(v.string()),
-      content: v.optional(v.string()),
+      contentCid: v.optional(v.string()),
+      storageType: v.optional(v.union(v.literal("ipfs"))),
       published: v.optional(v.boolean()),
       order: v.optional(v.number()),
       showInNav: v.optional(v.boolean()),
@@ -342,7 +346,9 @@ export const exportPostAsMarkdown = query({
 
     frontmatter.push("---");
 
-    return `${frontmatter.join("\n")}\n\n${post.content}`;
+    // Note: Content is stored on IPFS, so we can't export it directly
+    // The frontend should fetch content from IPFS using post.contentCid
+    return `${frontmatter.join("\n")}\n\n<!-- Content stored on IPFS with CID: ${post.contentCid} -->`;
   },
 });
 
@@ -407,6 +413,8 @@ export const exportPageAsMarkdown = query({
 
     frontmatter.push("---");
 
-    return `${frontmatter.join("\n")}\n\n${page.content}`;
+    // Note: Content is stored on IPFS, so we can't export it directly
+    // The frontend should fetch content from IPFS using page.contentCid
+    return `${frontmatter.join("\n")}\n\n<!-- Content stored on IPFS with CID: ${page.contentCid} -->`;
   },
 });

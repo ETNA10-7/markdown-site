@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalQuery } from "./_generated/server";
 
 // Internal query to fetch post details by IDs
+// Note: Content is stored on IPFS, returns contentCid instead
 export const fetchPostsByIds = internalQuery({
   args: { ids: v.array(v.id("posts")) },
   returns: v.array(
@@ -10,7 +11,7 @@ export const fetchPostsByIds = internalQuery({
       slug: v.string(),
       title: v.string(),
       description: v.string(),
-      content: v.string(),
+      contentCid: v.string(),
       unlisted: v.optional(v.boolean()),
     })
   ),
@@ -24,7 +25,7 @@ export const fetchPostsByIds = internalQuery({
           slug: doc.slug,
           title: doc.title,
           description: doc.description,
-          content: doc.content,
+          contentCid: doc.contentCid,
           unlisted: doc.unlisted,
         });
       }
@@ -34,6 +35,7 @@ export const fetchPostsByIds = internalQuery({
 });
 
 // Internal query to fetch page details by IDs
+// Note: Content is stored on IPFS, returns contentCid instead
 export const fetchPagesByIds = internalQuery({
   args: { ids: v.array(v.id("pages")) },
   returns: v.array(
@@ -41,7 +43,7 @@ export const fetchPagesByIds = internalQuery({
       _id: v.id("pages"),
       slug: v.string(),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(),
     })
   ),
   handler: async (ctx, args) => {
@@ -53,7 +55,7 @@ export const fetchPagesByIds = internalQuery({
           _id: doc._id,
           slug: doc.slug,
           title: doc.title,
-          content: doc.content,
+          contentCid: doc.contentCid,
         });
       }
     }

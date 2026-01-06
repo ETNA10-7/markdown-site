@@ -2,13 +2,14 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 
 // Internal query to get posts without embeddings
+// Note: Content is stored on IPFS, returns contentCid instead
 export const getPostsWithoutEmbeddings = internalQuery({
   args: { limit: v.number() },
   returns: v.array(
     v.object({
       _id: v.id("posts"),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(),
     })
   ),
   handler: async (ctx, args) => {
@@ -23,19 +24,20 @@ export const getPostsWithoutEmbeddings = internalQuery({
       .map((post) => ({
         _id: post._id,
         title: post.title,
-        content: post.content,
+        contentCid: post.contentCid,
       }));
   },
 });
 
 // Internal query to get pages without embeddings
+// Note: Content is stored on IPFS, returns contentCid instead
 export const getPagesWithoutEmbeddings = internalQuery({
   args: { limit: v.number() },
   returns: v.array(
     v.object({
       _id: v.id("pages"),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(),
     })
   ),
   handler: async (ctx, args) => {
@@ -50,7 +52,7 @@ export const getPagesWithoutEmbeddings = internalQuery({
       .map((page) => ({
         _id: page._id,
         title: page.title,
-        content: page.content,
+        contentCid: page.contentCid,
       }));
   },
 });
@@ -78,13 +80,14 @@ export const savePageEmbedding = internalMutation({
 });
 
 // Internal query to get post by slug
+// Note: Content is stored on IPFS, returns contentCid instead
 export const getPostBySlug = internalQuery({
   args: { slug: v.string() },
   returns: v.union(
     v.object({
       _id: v.id("posts"),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(),
     }),
     v.null()
   ),
@@ -99,7 +102,7 @@ export const getPostBySlug = internalQuery({
     return {
       _id: post._id,
       title: post.title,
-      content: post.content,
+      contentCid: post.contentCid,
     };
   },
 });

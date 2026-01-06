@@ -38,8 +38,9 @@ export const generatePostEmbeddings = internalAction({
     let processed = 0;
     for (const post of posts) {
       try {
-        // Combine title and content for embedding
-        const textToEmbed = `${post.title}\n\n${post.content}`;
+        // Note: Content is stored on IPFS, embeddings use title only for now
+        // TODO: Fetch content from IPFS to generate full embeddings
+        const textToEmbed = post.title;
         const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
           text: textToEmbed,
         });
@@ -70,8 +71,9 @@ export const generatePageEmbeddings = internalAction({
     let processed = 0;
     for (const page of pages) {
       try {
-        // Combine title and content for embedding
-        const textToEmbed = `${page.title}\n\n${page.content}`;
+        // Note: Content is stored on IPFS, embeddings use title only for now
+        // TODO: Fetch content from IPFS to generate full embeddings
+        const textToEmbed = page.title;
         const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
           text: textToEmbed,
         });
@@ -145,7 +147,9 @@ export const regeneratePostEmbedding = action({
     }
 
     try {
-      const textToEmbed = `${post.title}\n\n${post.content}`;
+      // Note: Content is stored on IPFS, embeddings use title only for now
+      // TODO: Fetch content from IPFS to generate full embeddings
+      const textToEmbed = post.title;
       const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
         text: textToEmbed,
       });

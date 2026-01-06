@@ -56,12 +56,13 @@ export const semanticSearch = action({
     });
 
     // Fetch full document details
+    // Note: Content is stored on IPFS, returns contentCid instead
     const posts: Array<{
       _id: string;
       slug: string;
       title: string;
       description: string;
-      content: string;
+      contentCid: string;
       unlisted?: boolean;
     }> = await ctx.runQuery(internal.semanticSearchQueries.fetchPostsByIds, {
       ids: postResults.map((r) => r._id),
@@ -70,7 +71,7 @@ export const semanticSearch = action({
       _id: string;
       slug: string;
       title: string;
-      content: string;
+      contentCid: string;
     }> = await ctx.runQuery(internal.semanticSearchQueries.fetchPagesByIds, {
       ids: pageResults.map((r) => r._id),
     });
@@ -90,13 +91,14 @@ export const semanticSearch = action({
     for (const result of postResults) {
       const post = posts.find((p) => p._id === result._id);
       if (post) {
+        // Note: Content is on IPFS, use description as snippet
         results.push({
           _id: String(post._id),
           type: "post",
           slug: post.slug,
           title: post.title,
           description: post.description,
-          snippet: createSnippet(post.content, 120),
+          snippet: post.description.slice(0, 120) + (post.description.length > 120 ? "..." : ""),
           score: result._score,
         });
       }
@@ -111,7 +113,7 @@ export const semanticSearch = action({
           type: "page",
           slug: page.slug,
           title: page.title,
-          snippet: createSnippet(page.content, 120),
+          snippet: page.title, // Content is on IPFS, use title as snippet
           score: result._score,
         });
       }

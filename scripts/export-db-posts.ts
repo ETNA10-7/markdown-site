@@ -31,7 +31,8 @@ interface Post {
   slug: string;
   title: string;
   description: string;
-  content: string;
+  contentCid: string;
+  storageType: "ipfs";
   date: string;
   published: boolean;
   tags: string[];
@@ -66,7 +67,8 @@ interface Page {
   _id: string;
   slug: string;
   title: string;
-  content: string;
+  contentCid: string;
+  storageType: "ipfs";
   published: boolean;
   order?: number;
   showInNav?: boolean;
@@ -148,7 +150,8 @@ function generatePostMarkdown(post: Post): string {
 
   frontmatter.push("---");
 
-  return `${frontmatter.join("\n")}\n\n${post.content}`;
+  // Note: Content is stored on IPFS, fetch from https://gateway.pinata.cloud/ipfs/${post.contentCid}
+  return `${frontmatter.join("\n")}\n\n<!-- Content stored on IPFS with CID: ${post.contentCid} -->\n<!-- Fetch content from: https://gateway.pinata.cloud/ipfs/${post.contentCid} -->`;
 }
 
 function generatePageMarkdown(page: Page): string {
@@ -201,7 +204,8 @@ function generatePageMarkdown(page: Page): string {
 
   frontmatter.push("---");
 
-  return `${frontmatter.join("\n")}\n\n${page.content}`;
+  // Note: Content is stored on IPFS, fetch from https://gateway.pinata.cloud/ipfs/${page.contentCid}
+  return `${frontmatter.join("\n")}\n\n<!-- Content stored on IPFS with CID: ${page.contentCid} -->\n<!-- Fetch content from: https://gateway.pinata.cloud/ipfs/${page.contentCid} -->`;
 }
 
 async function main() {

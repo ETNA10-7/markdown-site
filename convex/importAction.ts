@@ -2,7 +2,7 @@
 
 import { v } from "convex/values";
 import { action } from "./_generated/server";
-import { api } from "./_generated/api";
+// import { api } from "./_generated/api"; // Unused - import disabled
 import FirecrawlApp from "@mendable/firecrawl-js";
 
 /**
@@ -27,13 +27,14 @@ function cleanMarkdown(content: string): string {
 
 /**
  * Calculate reading time from content
+ * Note: Currently unused - import action is disabled
  */
-function calculateReadTime(content: string): string {
-  const wordsPerMinute = 200;
-  const wordCount = content.split(/\s+/).length;
-  const minutes = Math.ceil(wordCount / wordsPerMinute);
-  return `${minutes} min read`;
-}
+// function calculateReadTime(content: string): string {
+//   const wordsPerMinute = 200;
+//   const wordCount = content.split(/\s+/).length;
+//   const minutes = Math.ceil(wordCount / wordsPerMinute);
+//   return `${minutes} min read`;
+// }
 
 /**
  * Import content from a URL using Firecrawl and save directly to database
@@ -49,7 +50,7 @@ export const importFromUrl = action({
     title: v.optional(v.string()),
     error: v.optional(v.string()),
   }),
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const apiKey = process.env.FIRECRAWL_API_KEY;
     if (!apiKey) {
       return {
@@ -73,7 +74,7 @@ export const importFromUrl = action({
       }
 
       const title = result.metadata?.title || "Imported Post";
-      const description = result.metadata?.description || "";
+      // const description = result.metadata?.description || ""; // Unused - import disabled
       const content = cleanMarkdown(result.markdown);
       const baseSlug = generateSlug(title);
       const slug = baseSlug || `imported-${Date.now()}`;
@@ -88,53 +89,10 @@ export const importFromUrl = action({
       }
       const contentWithAttribution = `${content}\n\n---\n\n*Originally published at [${hostname}](${args.url})*`;
 
-      // Create post directly in database using the CMS mutation
-      try {
-        await ctx.runMutation(api.cms.createPost, {
-          post: {
-            slug,
-            title,
-            description,
-            content: contentWithAttribution,
-            date: today,
-            published: args.published ?? false,
-            tags: ["imported"],
-            readTime: calculateReadTime(content),
-          },
-        });
-      } catch (mutationError) {
-        // Handle slug conflict by adding timestamp
-        if (
-          mutationError instanceof Error &&
-          mutationError.message.includes("already exists")
-        ) {
-          const uniqueSlug = `${slug}-${Date.now()}`;
-          await ctx.runMutation(api.cms.createPost, {
-            post: {
-              slug: uniqueSlug,
-              title,
-              description,
-              content: contentWithAttribution,
-              date: today,
-              published: args.published ?? false,
-              tags: ["imported"],
-              readTime: calculateReadTime(content),
-            },
-          });
-          return {
-            success: true,
-            slug: uniqueSlug,
-            title,
-          };
-        }
-        throw mutationError;
-      }
-
-      return {
-        success: true,
-        slug,
-        title,
-      };
+      // Upload content to IPFS first
+      // TODO: Implement IPFS upload in importAction (requires Pinata REST API or SDK)
+      // For now, import is disabled - content must be uploaded to IPFS before creating post
+      throw new Error("Import action requires IPFS upload. Please use sync script instead.");
     } catch (error) {
       return {
         success: false,

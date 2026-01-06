@@ -34,7 +34,7 @@ export const search = query({
       anchor?: string;
     }> = [];
 
-    // Search posts by title
+    // Search posts by title only (content is stored on IPFS, not searchable from Convex)
     const postsByTitle = await ctx.db
       .query("posts")
       .withSearchIndex("search_title", (q) =>
@@ -42,15 +42,7 @@ export const search = query({
       )
       .take(10);
 
-    // Search posts by content
-    const postsByContent = await ctx.db
-      .query("posts")
-      .withSearchIndex("search_content", (q) =>
-        q.search("content", args.query).eq("published", true)
-      )
-      .take(10);
-
-    // Search pages by title
+    // Search pages by title only (content is stored on IPFS, not searchable from Convex)
     const pagesByTitle = await ctx.db
       .query("pages")
       .withSearchIndex("search_title", (q) =>
@@ -58,25 +50,20 @@ export const search = query({
       )
       .take(10);
 
-    // Search pages by content
-    const pagesByContent = await ctx.db
-      .query("pages")
-      .withSearchIndex("search_content", (q) =>
-        q.search("content", args.query).eq("published", true)
-      )
-      .take(10);
-
     // Deduplicate and process post results
     const seenPostIds = new Set<string>();
-    for (const post of [...postsByTitle, ...postsByContent]) {
+    for (const post of postsByTitle) {
       if (seenPostIds.has(post._id)) continue;
       seenPostIds.add(post._id);
 
       // Skip unlisted posts
       if (post.unlisted) continue;
 
-      // Create snippet from content and find anchor
-      const { snippet, anchor } = createSnippet(post.content, args.query, 120);
+      // Create snippet from description (content is on IPFS, not accessible here)
+      const snippet = post.description
+        ? post.description.slice(0, 120) + (post.description.length > 120 ? "..." : "")
+        : "";
+      const anchor = null;
 
       results.push({
         _id: post._id,
@@ -91,12 +78,15 @@ export const search = query({
 
     // Deduplicate and process page results
     const seenPageIds = new Set<string>();
-    for (const page of [...pagesByTitle, ...pagesByContent]) {
+    for (const page of pagesByTitle) {
       if (seenPageIds.has(page._id)) continue;
       seenPageIds.add(page._id);
 
-      // Create snippet from content and find anchor
-      const { snippet, anchor } = createSnippet(page.content, args.query, 120);
+      // Create snippet from excerpt or title (content is on IPFS, not accessible here)
+      const snippet = page.excerpt
+        ? page.excerpt.slice(0, 120) + (page.excerpt.length > 120 ? "..." : "")
+        : page.title;
+      const anchor = null;
 
       results.push({
         _id: page._id,
@@ -168,6 +158,8 @@ function findNearestHeading(content: string, matchPosition: number): string | nu
 }
 
 // Helper to create a snippet around the search term and find anchor
+// Note: Unused since content search is disabled (content is on IPFS)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createSnippet(
   content: string,
   searchTerm: string,

@@ -695,7 +695,7 @@ export const siteConfig: SiteConfig = {
   // WARNING: When requireAuth is false, anyone can access the dashboard
   dashboard: {
     enabled: true,
-    requireAuth: true,
+    requireAuth: false, // Set to true if you configure WorkOS authentication
   },
 
   // Image lightbox configuration

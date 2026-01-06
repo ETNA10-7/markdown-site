@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:convex": "convex dev",
+    "dev:convex": "./convex-dev.sh",
     "build": "npx vite build",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -38,7 +38,7 @@
     "@workos-inc/authkit-react": "^0.15.0",
     "@workos-inc/widgets": "^1.6.1",
     "agentmail": "^0.1.15",
-    "convex": "^1.17.4",
+    "convex": "^1.31.2",
     "date-fns": "^3.3.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.344.0",

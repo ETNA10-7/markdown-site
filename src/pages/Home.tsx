@@ -11,6 +11,7 @@ import GitHubContributions from "../components/GitHubContributions";
 import Footer from "../components/Footer";
 import SocialFooter from "../components/SocialFooter";
 import NewsletterSignup from "../components/NewsletterSignup";
+import { useIPFSContent } from "../hooks/useIPFSContent";
 import siteConfig from "../config/siteConfig";
 
 // Local storage key for view mode preference

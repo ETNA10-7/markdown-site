@@ -149,6 +149,7 @@ http.route({
     }
 
     // Return raw markdown if requested
+    // Note: Content is stored on IPFS, fetch from https://gateway.pinata.cloud/ipfs/${post.contentCid}
     if (format === "markdown" || format === "md") {
       const markdown = `# ${post.title}
 
@@ -157,10 +158,11 @@ http.route({
 **Published:** ${post.date}${post.readTime ? ` | **Read time:** ${post.readTime}` : ""}
 **Tags:** ${post.tags.join(", ")}
 **URL:** ${SITE_URL}/${post.slug}
+**Content CID:** ${post.contentCid}
 
 ---
 
-${post.content}`;
+Content is stored on IPFS. Fetch from: https://gateway.pinata.cloud/ipfs/${post.contentCid}`;
 
       return new Response(markdown, {
         headers: {
@@ -180,7 +182,9 @@ ${post.content}`;
       readTime: post.readTime,
       tags: post.tags,
       url: `${SITE_URL}/${post.slug}`,
-      content: post.content,
+      contentCid: post.contentCid,
+      contentUrl: `https://gateway.pinata.cloud/ipfs/${post.contentCid}`,
+      note: "Content is stored on IPFS. Fetch from contentUrl to get the markdown content.",
     };
 
     return new Response(JSON.stringify(response, null, 2), {
@@ -214,7 +218,8 @@ http.route({
           readTime: post.readTime,
           tags: post.tags,
           url: `${SITE_URL}/${post.slug}`,
-          content: fullPost?.content || "",
+          contentCid: fullPost?.contentCid || "",
+          contentUrl: fullPost?.contentCid ? `https://gateway.pinata.cloud/ipfs/${fullPost.contentCid}` : "",
         };
       }),
     );

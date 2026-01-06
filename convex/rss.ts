@@ -58,13 +58,14 @@ function generateRssXml(
 }
 
 // Generate RSS XML with full content (for LLMs and readers)
+// Note: Content is stored on IPFS, RSS includes CID and link to fetch content
 function generateFullRssXml(
   posts: Array<{
     title: string;
     description: string;
     slug: string;
     date: string;
-    content: string;
+    contentCid: string;
     readTime?: string;
     tags: string[];
   }>,
@@ -73,6 +74,7 @@ function generateFullRssXml(
     .map((post) => {
       const pubDate = new Date(post.date).toUTCString();
       const url = `${SITE_URL}/${post.slug}`;
+      const contentUrl = `https://gateway.pinata.cloud/ipfs/${post.contentCid}`;
 
       return `
     <item>
@@ -81,7 +83,7 @@ function generateFullRssXml(
       <guid>${url}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(post.description)}</description>
-      <content:encoded><![CDATA[${post.content}]]></content:encoded>
+      <content:encoded><![CDATA[Content stored on IPFS. Fetch from: ${contentUrl} (CID: ${post.contentCid})]]></content:encoded>
       ${post.tags.map((tag) => `<category>${escapeXml(tag)}</category>`).join("\n      ")}
     </item>`;
     })
@@ -132,12 +134,14 @@ export const rssFullFeed = httpAction(async (ctx) => {
       const fullPost = await ctx.runQuery(api.posts.getPostBySlug, {
         slug: post.slug,
       });
+      // Note: Content is stored on IPFS, RSS feed includes CID
+      // Clients should fetch content from https://gateway.pinata.cloud/ipfs/${fullPost?.contentCid}
       return {
         title: post.title,
         description: post.description,
         slug: post.slug,
         date: post.date,
-        content: fullPost?.content || "",
+        contentCid: fullPost?.contentCid || "",
         readTime: post.readTime,
         tags: post.tags,
       };

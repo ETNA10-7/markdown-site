@@ -32,9 +32,29 @@ export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
 
   // Fetch docs pages and posts for detecting if current page is in docs section
-  const docsPages = useQuery(
-    siteConfig.docsSection?.enabled ? api.pages.getDocsPages : "skip"
+  // Workaround: Use getAllPages and filter if getDocsPages is not available (Convex sync issue)
+  const allPagesForDocs = useQuery(
+    siteConfig.docsSection?.enabled ? api.pages.getAllPages : "skip"
   );
+  const docsPages = allPagesForDocs
+    ? allPagesForDocs
+        .filter((p) => p.docsSection === true && p.published)
+        .map((p) => ({
+          _id: p._id,
+          slug: p.slug,
+          title: p.title,
+          docsSectionGroup: p.docsSectionGroup,
+          docsSectionOrder: p.docsSectionOrder,
+          docsSectionGroupOrder: p.docsSectionGroupOrder,
+          docsSectionGroupIcon: p.docsSectionGroupIcon,
+        }))
+        .sort((a, b) => {
+          const orderA = a.docsSectionOrder ?? 999;
+          const orderB = b.docsSectionOrder ?? 999;
+          if (orderA !== orderB) return orderA - orderB;
+          return a.title.localeCompare(b.title);
+        })
+    : undefined;
   const docsPosts = useQuery(
     siteConfig.docsSection?.enabled ? api.posts.getDocsPosts : "skip"
   );
