@@ -4,6 +4,7 @@ import matter from "gray-matter";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../convex/_generated/api";
 import dotenv from "dotenv";
+import { uploadMarkdownToIPFS } from "../lib/pinata";
 
 // Load environment variables based on SYNC_ENV
 const isProduction = process.env.SYNC_ENV === "production";
@@ -150,6 +151,73 @@ interface ParsedPage {
   docsLanding?: boolean; // Use as /docs landing page
 }
 
+// Post data structure sent to Convex (with IPFS CID instead of content)
+interface PostForConvex {
+  slug: string;
+  title: string;
+  description: string;
+  contentCid: string; // IPFS CID instead of content
+  date: string;
+  published: boolean;
+  tags: string[];
+  readTime?: string;
+  image?: string;
+  showImageAtTop?: boolean;
+  excerpt?: string;
+  featured?: boolean;
+  featuredOrder?: number;
+  authorName?: string;
+  authorImage?: string;
+  layout?: string;
+  rightSidebar?: boolean;
+  showFooter?: boolean;
+  footer?: string;
+  showSocialFooter?: boolean;
+  aiChat?: boolean;
+  blogFeatured?: boolean;
+  newsletter?: boolean;
+  contactForm?: boolean;
+  unlisted?: boolean;
+  docsSection?: boolean;
+  docsSectionGroup?: string;
+  docsSectionOrder?: number;
+  docsSectionGroupOrder?: number;
+  docsSectionGroupIcon?: string;
+  docsLanding?: boolean;
+}
+
+// Page data structure sent to Convex (with IPFS CID instead of content)
+interface PageForConvex {
+  slug: string;
+  title: string;
+  contentCid: string; // IPFS CID instead of content
+  published: boolean;
+  order?: number;
+  showInNav?: boolean;
+  excerpt?: string;
+  image?: string;
+  showImageAtTop?: boolean;
+  featured?: boolean;
+  featuredOrder?: number;
+  authorName?: string;
+  authorImage?: string;
+  layout?: string;
+  rightSidebar?: boolean;
+  showFooter?: boolean;
+  footer?: string;
+  showSocialFooter?: boolean;
+  aiChat?: boolean;
+  contactForm?: boolean;
+  newsletter?: boolean;
+  textAlign?: string;
+  docsSection?: boolean;
+  docsSectionGroup?: string;
+  docsSectionOrder?: number;
+  docsSectionGroupOrder?: number;
+  docsSectionGroupIcon?: string;
+  docsLanding?: boolean;
+}
+
 // Calculate reading time based on word count
 function calculateReadTime(content: string): string {
   const wordsPerMinute = 200;
@@ -290,6 +358,85 @@ function getAllPageFiles(): string[] {
     .map((file) => path.join(PAGES_DIR, file));
 }
 
+// Upload post content to IPFS and convert to Convex format
+async function uploadPostToIPFS(post: ParsedPost): Promise<PostForConvex> {
+  console.log(`  Uploading content to IPFS for: ${post.title}...`);
+  const contentCid = await uploadMarkdownToIPFS(post.content);
+  console.log(`  ✓ Uploaded to IPFS: ${contentCid}`);
+
+  return {
+    slug: post.slug,
+    title: post.title,
+    description: post.description,
+    contentCid, // IPFS CID instead of content
+    date: post.date,
+    published: post.published,
+    tags: post.tags,
+    readTime: post.readTime,
+    image: post.image,
+    showImageAtTop: post.showImageAtTop,
+    excerpt: post.excerpt,
+    featured: post.featured,
+    featuredOrder: post.featuredOrder,
+    authorName: post.authorName,
+    authorImage: post.authorImage,
+    layout: post.layout,
+    rightSidebar: post.rightSidebar,
+    showFooter: post.showFooter,
+    footer: post.footer,
+    showSocialFooter: post.showSocialFooter,
+    aiChat: post.aiChat,
+    blogFeatured: post.blogFeatured,
+    newsletter: post.newsletter,
+    contactForm: post.contactForm,
+    unlisted: post.unlisted,
+    docsSection: post.docsSection,
+    docsSectionGroup: post.docsSectionGroup,
+    docsSectionOrder: post.docsSectionOrder,
+    docsSectionGroupOrder: post.docsSectionGroupOrder,
+    docsSectionGroupIcon: post.docsSectionGroupIcon,
+    docsLanding: post.docsLanding,
+  };
+}
+
+// Upload page content to IPFS and convert to Convex format
+async function uploadPageToIPFS(page: ParsedPage): Promise<PageForConvex> {
+  console.log(`  Uploading content to IPFS for: ${page.title}...`);
+  const contentCid = await uploadMarkdownToIPFS(page.content);
+  console.log(`  ✓ Uploaded to IPFS: ${contentCid}`);
+
+  return {
+    slug: page.slug,
+    title: page.title,
+    contentCid, // IPFS CID instead of content
+    published: page.published,
+    order: page.order,
+    showInNav: page.showInNav,
+    excerpt: page.excerpt,
+    image: page.image,
+    showImageAtTop: page.showImageAtTop,
+    featured: page.featured,
+    featuredOrder: page.featuredOrder,
+    authorName: page.authorName,
+    authorImage: page.authorImage,
+    layout: page.layout,
+    rightSidebar: page.rightSidebar,
+    showFooter: page.showFooter,
+    footer: page.footer,
+    showSocialFooter: page.showSocialFooter,
+    aiChat: page.aiChat,
+    contactForm: page.contactForm,
+    newsletter: page.newsletter,
+    textAlign: page.textAlign,
+    docsSection: page.docsSection,
+    docsSectionGroup: page.docsSectionGroup,
+    docsSectionOrder: page.docsSectionOrder,
+    docsSectionGroupOrder: page.docsSectionGroupOrder,
+    docsSectionGroupIcon: page.docsSectionGroupIcon,
+    docsLanding: page.docsLanding,
+  };
+}
+
 // Main sync function
 async function syncPosts() {
   console.log("Starting post sync...\n");
@@ -328,11 +475,27 @@ async function syncPosts() {
     }
   }
 
-  console.log(`\nSyncing ${posts.length} posts to Convex...\n`);
+  console.log(`\nUploading ${posts.length} posts to IPFS...\n`);
 
-  // Sync posts to Convex
+  // Upload post content to IPFS and convert to Convex format
+  const postsForConvex: PostForConvex[] = [];
+  for (const post of posts) {
+    try {
+      const postForConvex = await uploadPostToIPFS(post);
+      postsForConvex.push(postForConvex);
+    } catch (error) {
+      console.error(`Failed to upload post "${post.title}" to IPFS:`, error);
+      process.exit(1);
+    }
+  }
+
+  console.log(`\nSyncing ${postsForConvex.length} posts to Convex...\n`);
+
+  // Sync posts to Convex (with IPFS CIDs instead of content)
   try {
-    const result = await client.mutation(api.posts.syncPostsPublic, { posts });
+    const result = await client.mutation(api.posts.syncPostsPublic, {
+      posts: postsForConvex,
+    });
     console.log("Sync complete!");
     console.log(`  Created: ${result.created}`);
     console.log(`  Updated: ${result.updated}`);
@@ -358,11 +521,25 @@ async function syncPosts() {
     }
 
     if (pages.length > 0) {
-      console.log(`\nSyncing ${pages.length} pages to Convex...\n`);
+      console.log(`\nUploading ${pages.length} pages to IPFS...\n`);
+
+      // Upload page content to IPFS and convert to Convex format
+      const pagesForConvex: PageForConvex[] = [];
+      for (const page of pages) {
+        try {
+          const pageForConvex = await uploadPageToIPFS(page);
+          pagesForConvex.push(pageForConvex);
+        } catch (error) {
+          console.error(`Failed to upload page "${page.title}" to IPFS:`, error);
+          process.exit(1);
+        }
+      }
+
+      console.log(`\nSyncing ${pagesForConvex.length} pages to Convex...\n`);
 
       try {
         const pageResult = await client.mutation(api.pages.syncPagesPublic, {
-          pages,
+          pages: pagesForConvex,
         });
         console.log("Pages sync complete!");
         console.log(`  Created: ${pageResult.created}`);
