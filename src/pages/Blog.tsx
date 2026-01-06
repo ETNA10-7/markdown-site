@@ -7,6 +7,7 @@ import BlogHeroCard from "../components/BlogHeroCard";
 import Footer from "../components/Footer";
 import SocialFooter from "../components/SocialFooter";
 import NewsletterSignup from "../components/NewsletterSignup";
+import { useIPFSContent } from "../hooks/useIPFSContent";
 import siteConfig from "../config/siteConfig";
 import { ArrowLeft } from "lucide-react";
 
@@ -30,6 +31,9 @@ export default function Blog() {
 
   // Fetch footer content from Convex (synced via markdown)
   const footerPage = useQuery(api.pages.getPageBySlug, { slug: "footer" });
+
+  // Fetch footer content from IPFS using CID from metadata
+  const footerContent = useIPFSContent(footerPage?.contentCid ?? null);
 
   // State for view mode toggle (list or cards)
   const [viewMode, setViewMode] = useState<"list" | "cards">(
@@ -221,7 +225,9 @@ export default function Blog() {
         )}
 
       {/* Footer section */}
-      {showFooter && <Footer content={footerPage?.content} />}
+      {showFooter && (
+        <Footer content={footerContent.content ?? footerPage?.footer} />
+      )}
 
       {/* Social footer section */}
       {siteConfig.socialFooter?.enabled && siteConfig.socialFooter.showOnBlogPage && (

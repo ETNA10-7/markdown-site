@@ -103,6 +103,10 @@ export default function Home() {
   // Fetch footer content from Convex (synced via markdown)
   const footerPage = useQuery(api.pages.getPageBySlug, { slug: "footer" });
 
+  // Fetch content from IPFS using CIDs from metadata
+  const homeIntroContent = useIPFSContent(homeIntro?.contentCid ?? null);
+  const footerContent = useIPFSContent(footerPage?.contentCid ?? null);
+
   // State for view mode toggle (list or cards)
   const [viewMode, setViewMode] = useState<"list" | "cards">(
     siteConfig.featuredViewMode,
@@ -277,11 +281,13 @@ export default function Home() {
                 },
               }}
             >
-              {stripHtmlComments(homeIntro.content)}
+              {homeIntroContent.content
+                ? stripHtmlComments(homeIntroContent.content)
+                : ""}
             </ReactMarkdown>
           </div>
         ) : (
-          // Fallback to siteConfig.bio only if page doesn't exist (null)
+          // Fallback to siteConfig.bio only if page doesn't exist (null) or content is loading
           <p className="home-bio">{siteConfig.bio}</p>
         )}
 
@@ -412,7 +418,7 @@ export default function Home() {
 
       {/* Footer section */}
       {siteConfig.footer.enabled && siteConfig.footer.showOnHomepage && (
-        <Footer content={footerPage?.content} />
+        <Footer content={footerContent.content ?? footerPage?.footer} />
       )}
 
       {/* Social footer section */}

@@ -6,6 +6,7 @@ import DocsLayout from "../components/DocsLayout";
 import BlogPost from "../components/BlogPost";
 import CopyPageDropdown from "../components/CopyPageDropdown";
 import { extractHeadings } from "../utils/extractHeadings";
+import { useIPFSContent } from "../hooks/useIPFSContent";
 import siteConfig from "../config/siteConfig";
 import { ArrowRight } from "lucide-react";
 
@@ -23,6 +24,9 @@ export default function DocsPage() {
 
   // Determine which content to use: page takes priority over post
   const landingContent = landingPage || landingPost;
+
+  // Fetch content from IPFS using CID from metadata
+  const landingContentIPFS = useIPFSContent(landingContent?.contentCid ?? null);
 
   // Get first doc item as fallback if no landing page is set
   const allDocsItems = [
@@ -67,7 +71,34 @@ export default function DocsPage() {
 
   // If we have landing content, render it with DocsLayout
   if (landingContent) {
-    const headings = extractHeadings(landingContent.content);
+    // Wait for IPFS content to load
+    if (landingContentIPFS.isLoading) {
+      return (
+        <DocsLayout headings={[]} currentSlug={landingContent.slug}>
+          <article className="docs-article">
+            <div className="docs-article-loading">
+              <div className="docs-loading-skeleton docs-loading-title" />
+              <div className="docs-loading-skeleton docs-loading-text" />
+            </div>
+          </article>
+        </DocsLayout>
+      );
+    }
+
+    if (landingContentIPFS.error) {
+      return (
+        <DocsLayout headings={[]} currentSlug={landingContent.slug}>
+          <article className="docs-article">
+            <div className="docs-article-error">
+              <p>Error loading content: {landingContentIPFS.error.message}</p>
+            </div>
+          </article>
+        </DocsLayout>
+      );
+    }
+
+    const content = landingContentIPFS.content ?? "";
+    const headings = extractHeadings(content);
     const description =
       "description" in landingContent
         ? landingContent.description
@@ -81,7 +112,7 @@ export default function DocsPage() {
           <div className="docs-article-actions">
             <CopyPageDropdown
               title={landingContent.title}
-              content={landingContent.content}
+              content={content}
               url={`${SITE_URL}/${landingContent.slug}`}
               slug={landingContent.slug}
               description={description}
@@ -99,7 +130,7 @@ export default function DocsPage() {
             )}
           </header>
           <BlogPost
-            content={landingContent.content}
+            content={content}
             slug={landingContent.slug}
             pageType={"date" in landingContent ? "post" : "page"}
           />

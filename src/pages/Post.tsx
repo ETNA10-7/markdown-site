@@ -12,6 +12,7 @@ import NewsletterSignup from "../components/NewsletterSignup";
 import ContactForm from "../components/ContactForm";
 import { extractHeadings } from "../utils/extractHeadings";
 import { useSidebar } from "../context/SidebarContext";
+import { useIPFSContent } from "../hooks/useIPFSContent";
 import { format, parseISO } from "date-fns";
 import { ArrowLeft, Link as LinkIcon, Rss, Tag } from "lucide-react";
 import { XLogo, LinkedinLogo } from "@phosphor-icons/react";
@@ -85,7 +86,21 @@ export default function Post({
   // Fetch footer content from Convex (synced via markdown)
   const footerPage = useQuery(api.pages.getPageBySlug, { slug: "footer" });
 
+  // Fetch content from IPFS using CIDs from metadata
+  const pageContent = useIPFSContent(page?.contentCid ?? null);
+  const postContent = useIPFSContent(post?.contentCid ?? null);
+  const footerContent = useIPFSContent(footerPage?.contentCid ?? null);
+
   const [copied, setCopied] = useState(false);
+
+  // Get content from IPFS (with fallback for loading/error states)
+  const pageContentText = pageContent.content ?? "";
+  const postContentText = postContent.content ?? "";
+  const footerContentText = footerContent.content ?? footerPage?.footer;
+
+  // Show loading state if metadata is loaded but IPFS content is still loading
+  const isContentLoading =
+    (page && pageContent.isLoading) || (post && postContent.isLoading);
 
   // Scroll to hash anchor after content loads
   // Skip if there's a search query - let the highlighting hook handle scroll
@@ -112,14 +127,14 @@ export default function Post({
   // Update sidebar context with headings for mobile menu
   useEffect(() => {
     // Extract headings for pages with sidebar layout
-    if (page && page.layout === "sidebar") {
-      const pageHeadings = extractHeadings(page.content);
+    if (page && page.layout === "sidebar" && pageContent.content) {
+      const pageHeadings = extractHeadings(pageContent.content);
       setHeadings(pageHeadings);
       setActiveId(location.hash.slice(1) || undefined);
     }
     // Extract headings for posts with sidebar layout
-    else if (post && post.layout === "sidebar") {
-      const postHeadings = extractHeadings(post.content);
+    else if (post && post.layout === "sidebar" && postContent.content) {
+      const postHeadings = extractHeadings(postContent.content);
       setHeadings(postHeadings);
       setActiveId(location.hash.slice(1) || undefined);
     }
@@ -134,7 +149,7 @@ export default function Post({
       setHeadings([]);
       setActiveId(undefined);
     };
-  }, [page, post, location.hash, setHeadings, setActiveId]);
+  }, [page, post, pageContent.content, postContent.content, location.hash, setHeadings, setActiveId]);
 
   // Update page title for static pages
   useEffect(() => {
@@ -180,8 +195,8 @@ export default function Post({
       },
       url: postUrl,
       keywords: post.tags.join(", "),
-      articleBody: post.content.substring(0, 500),
-      wordCount: post.content.split(/\s+/).length,
+      articleBody: postContentText.substring(0, 500),
+      wordCount: postContentText.split(/\s+/).length,
     };
 
     const script = document.createElement("script");
@@ -262,19 +277,45 @@ export default function Post({
   if (page) {
     // Check if this page should use docs layout
     if (page.docsSection && siteConfig.docsSection?.enabled) {
-      const docsHeadings = extractHeadings(page.content);
+      // Wait for IPFS content to load
+      if (pageContent.isLoading) {
+        return (
+          <DocsLayout headings={[]} currentSlug={page.slug}>
+            <article className="docs-article">
+              <div className="docs-article-loading">
+                <div className="docs-loading-skeleton docs-loading-title" />
+                <div className="docs-loading-skeleton docs-loading-text" />
+              </div>
+            </article>
+          </DocsLayout>
+        );
+      }
+
+      if (pageContent.error) {
+        return (
+          <DocsLayout headings={[]} currentSlug={page.slug}>
+            <article className="docs-article">
+              <div className="docs-article-error">
+                <p>Error loading content: {pageContent.error.message}</p>
+              </div>
+            </article>
+          </DocsLayout>
+        );
+      }
+
+      const docsHeadings = extractHeadings(pageContentText);
       return (
         <DocsLayout
           headings={docsHeadings}
           currentSlug={page.slug}
           aiChatEnabled={page.aiChat}
-          pageContent={page.content}
+          pageContent={pageContentText}
         >
           <article className="docs-article">
             <div className="docs-article-actions">
               <CopyPageDropdown
                 title={page.title}
-                content={page.content}
+                content={pageContentText}
                 url={`${SITE_URL}/${page.slug}`}
                 slug={page.slug}
                 description={page.excerpt}
@@ -295,21 +336,42 @@ export default function Post({
                 <p className="docs-article-description">{page.excerpt}</p>
               )}
             </header>
-            <BlogPost content={page.content} slug={page.slug} pageType="page" />
+            <BlogPost content={pageContentText} slug={page.slug} pageType="page" />
             {siteConfig.footer.enabled &&
               (page.showFooter !== undefined
                 ? page.showFooter
                 : siteConfig.footer.showOnPages) && (
-                <Footer content={page.footer || footerPage?.content} />
+                <Footer content={page.footer || footerContentText} />
               )}
           </article>
         </DocsLayout>
       );
     }
 
+    // Wait for IPFS content to load
+    if (pageContent.isLoading) {
+      return (
+        <div className="post-page">
+          <div className="post-loading">
+            <p>Loading content...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (pageContent.error) {
+      return (
+        <div className="post-page">
+          <div className="post-error">
+            <p>Error loading content: {pageContent.error.message}</p>
+          </div>
+        </div>
+      );
+    }
+
     // Extract headings for sidebar TOC (only for pages with layout: "sidebar")
     const headings =
-      page.layout === "sidebar" ? extractHeadings(page.content) : [];
+      page.layout === "sidebar" ? extractHeadings(pageContentText) : [];
     const hasLeftSidebar = headings.length > 0;
     // Check if right sidebar is enabled (only when explicitly set in frontmatter)
     const hasRightSidebar =
@@ -336,7 +398,7 @@ export default function Post({
           {!hasAnySidebar && (
             <CopyPageDropdown
               title={page.title}
-              content={page.content}
+              content={pageContentText}
               url={window.location.href}
               slug={page.slug}
               description={page.excerpt}
@@ -379,7 +441,7 @@ export default function Post({
                   <div className="post-header-actions">
                     <CopyPageDropdown
                       title={page.title}
-                      content={page.content}
+                      content={pageContentText}
                       url={window.location.href}
                       slug={page.slug}
                       description={page.excerpt}
@@ -411,12 +473,12 @@ export default function Post({
               )}
             </header>
 
-            <BlogPost content={page.content} slug={page.slug} pageType="page" />
+            <BlogPost content={pageContentText} slug={page.slug} pageType="page" />
 
             {/* Contact form - shown when contactForm: true in frontmatter (only if not inline) */}
             {siteConfig.contactForm?.enabled &&
               page.contactForm &&
-              !page.content.includes("<!-- contactform -->") && (
+              !pageContentText.includes("<!-- contactform -->") && (
                 <ContactForm source={`page:${page.slug}`} />
               )}
 
@@ -425,7 +487,7 @@ export default function Post({
               (page.newsletter !== undefined
                 ? page.newsletter
                 : siteConfig.newsletter.signup.posts.enabled) &&
-              !page.content.includes("<!-- newsletter -->") && (
+              !pageContentText.includes("<!-- newsletter -->") && (
                 <NewsletterSignup source="post" postSlug={page.slug} />
               )}
 
@@ -434,7 +496,7 @@ export default function Post({
               (page.showFooter !== undefined
                 ? page.showFooter
                 : siteConfig.footer.showOnPages) && (
-                <Footer content={page.footer || footerPage?.content} />
+                <Footer content={page.footer || footerContentText} />
               )}
 
             {/* Social footer - shown inside article at bottom for pages */}
@@ -448,7 +510,7 @@ export default function Post({
           {hasRightSidebar && (
             <RightSidebar
               aiChatEnabled={page.aiChat}
-              pageContent={page.content}
+              pageContent={pageContentText}
               slug={page.slug}
             />
           )}
@@ -497,21 +559,42 @@ export default function Post({
     );
   };
 
+  // Wait for IPFS content to load before rendering
+  if (postContent.isLoading) {
+    return (
+      <div className="post-page">
+        <div className="post-loading">
+          <p>Loading content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (postContent.error) {
+    return (
+      <div className="post-page">
+        <div className="post-error">
+          <p>Error loading content: {postContent.error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   // Check if this post should use docs layout
   if (post.docsSection && siteConfig.docsSection?.enabled) {
-    const docsHeadings = extractHeadings(post.content);
+    const docsHeadings = extractHeadings(postContentText);
     return (
       <DocsLayout
         headings={docsHeadings}
         currentSlug={post.slug}
         aiChatEnabled={post.aiChat}
-        pageContent={post.content}
+        pageContent={postContentText}
       >
         <article className="docs-article">
           <div className="docs-article-actions">
             <CopyPageDropdown
               title={post.title}
-              content={post.content}
+              content={postContentText}
               url={`${SITE_URL}/${post.slug}`}
               slug={post.slug}
               description={post.description}
@@ -534,12 +617,12 @@ export default function Post({
               <p className="docs-article-description">{post.description}</p>
             )}
           </header>
-          <BlogPost content={post.content} slug={post.slug} pageType="post" />
+          <BlogPost content={postContentText} slug={post.slug} pageType="post" />
           {siteConfig.footer.enabled &&
             (post.showFooter !== undefined
               ? post.showFooter
               : siteConfig.footer.showOnPosts) && (
-              <Footer content={post.footer || footerPage?.content} />
+              <Footer content={post.footer || footerContentText} />
             )}
         </article>
       </DocsLayout>
@@ -548,7 +631,7 @@ export default function Post({
 
   // Extract headings for sidebar TOC (only for posts with layout: "sidebar")
   const headings =
-    post?.layout === "sidebar" ? extractHeadings(post.content) : [];
+    post?.layout === "sidebar" ? extractHeadings(postContentText) : [];
   const hasLeftSidebar = headings.length > 0;
   // Check if right sidebar is enabled (only when explicitly set in frontmatter)
   const hasRightSidebar =
@@ -576,7 +659,7 @@ export default function Post({
         {!hasAnySidebar && (
           <CopyPageDropdown
             title={post.title}
-            content={post.content}
+            content={postContentText}
             url={window.location.href}
             slug={post.slug}
             description={post.description}
@@ -621,7 +704,7 @@ export default function Post({
                 <div className="post-header-actions">
                   <CopyPageDropdown
                     title={post.title}
-                    content={post.content}
+                    content={postContentText}
                     url={window.location.href}
                     slug={post.slug}
                     description={post.description}
@@ -669,7 +752,7 @@ export default function Post({
             )}
           </header>
           {/* Blog post content - raw markdown or rendered */}
-          <BlogPost content={post.content} slug={post.slug} pageType="post" />
+          <BlogPost content={postContentText} slug={post.slug} pageType="post" />
 
           <footer className="post-footer">
             <div className="post-share">
@@ -757,14 +840,14 @@ export default function Post({
               (post.newsletter !== undefined
                 ? post.newsletter
                 : siteConfig.newsletter.signup.posts.enabled) &&
-              !post.content.includes("<!-- newsletter -->") && (
+              !postContentText.includes("<!-- newsletter -->") && (
                 <NewsletterSignup source="post" postSlug={post.slug} />
               )}
 
             {/* Contact form - shown when contactForm: true in frontmatter (only if not inline) */}
             {siteConfig.contactForm?.enabled &&
               post.contactForm &&
-              !post.content.includes("<!-- contactform -->") && (
+              !postContentText.includes("<!-- contactform -->") && (
                 <ContactForm source={`post:${post.slug}`} />
               )}
           </footer>
@@ -774,7 +857,7 @@ export default function Post({
             (post.showFooter !== undefined
               ? post.showFooter
               : siteConfig.footer.showOnPosts) && (
-              <Footer content={post.footer || footerPage?.content} />
+              <Footer content={post.footer || footerContentText} />
             )}
 
           {/* Social footer - shown inside article at bottom for posts */}
@@ -788,7 +871,7 @@ export default function Post({
         {hasRightSidebar && (
           <RightSidebar
             aiChatEnabled={post.aiChat}
-            pageContent={post.content}
+            pageContent={postContentText}
             slug={post.slug}
           />
         )}
