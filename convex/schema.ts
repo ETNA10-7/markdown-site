@@ -7,7 +7,8 @@ export default defineSchema({
     slug: v.string(),
     title: v.string(),
     description: v.string(),
-    content: v.string(),
+    contentCid: v.string(), // IPFS Content Identifier (CID) instead of full content
+    storageType: v.union(v.literal("ipfs")), // Storage type identifier
     date: v.string(),
     published: v.boolean(),
     tags: v.array(v.string()),
@@ -47,10 +48,8 @@ export default defineSchema({
     .index("by_authorName", ["authorName"])
     .index("by_docsSection", ["docsSection"])
     .index("by_source", ["source"])
-    .searchIndex("search_content", {
-      searchField: "content",
-      filterFields: ["published"],
-    })
+    // Content search index removed - content is now stored in IPFS
+    // Search will need to be updated to fetch from IPFS or use alternative approach
     .searchIndex("search_title", {
       searchField: "title",
       filterFields: ["published"],
@@ -65,7 +64,8 @@ export default defineSchema({
   pages: defineTable({
     slug: v.string(),
     title: v.string(),
-    content: v.string(),
+    contentCid: v.string(), // IPFS Content Identifier (CID) instead of full content
+    storageType: v.union(v.literal("ipfs")), // Storage type identifier
     published: v.boolean(),
     order: v.optional(v.number()), // Display order in nav
     showInNav: v.optional(v.boolean()), // Show in navigation menu (default: true)
@@ -100,10 +100,8 @@ export default defineSchema({
   .index("by_featured", ["featured"])
   .index("by_docsSection", ["docsSection"])
   .index("by_source", ["source"])
-    .searchIndex("search_content", {
-      searchField: "content",
-      filterFields: ["published"],
-    })
+    // Content search index removed - content is now stored in IPFS
+    // Search will need to be updated to fetch from IPFS or use alternative approach
     .searchIndex("search_title", {
       searchField: "title",
       filterFields: ["published"],

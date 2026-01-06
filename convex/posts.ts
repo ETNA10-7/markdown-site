@@ -11,7 +11,8 @@ export const listAll = query({
       slug: v.string(),
       title: v.string(),
       description: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       date: v.string(),
       published: v.boolean(),
       tags: v.array(v.string()),
@@ -39,7 +40,8 @@ export const listAll = query({
       slug: post.slug,
       title: post.title,
       description: post.description,
-      content: post.content,
+      contentCid: post.contentCid,
+      storageType: post.storageType,
       date: post.date,
       published: post.published,
       tags: post.tags,
@@ -220,7 +222,8 @@ export const getPostBySlug = query({
       slug: v.string(),
       title: v.string(),
       description: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       date: v.string(),
       published: v.boolean(),
       tags: v.array(v.string()),
@@ -260,7 +263,8 @@ export const getPostBySlug = query({
       slug: post.slug,
       title: post.title,
       description: post.description,
-      content: post.content,
+      contentCid: post.contentCid,
+      storageType: post.storageType,
       date: post.date,
       published: post.published,
       tags: post.tags,
@@ -296,7 +300,8 @@ export const getPostBySlugInternal = internalQuery({
       slug: v.string(),
       title: v.string(),
       description: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       excerpt: v.optional(v.string()),
     }),
     v.null(),
@@ -315,7 +320,8 @@ export const getPostBySlugInternal = internalQuery({
       slug: post.slug,
       title: post.title,
       description: post.description,
-      content: post.content,
+      contentCid: post.contentCid,
+      storageType: post.storageType,
       excerpt: post.excerpt,
     };
   },
@@ -366,7 +372,7 @@ export const syncPosts = internalMutation({
         slug: v.string(),
         title: v.string(),
         description: v.string(),
-        content: v.string(),
+        contentCid: v.string(), // IPFS CID instead of content
         date: v.string(),
         published: v.boolean(),
         tags: v.array(v.string()),
@@ -423,7 +429,8 @@ export const syncPosts = internalMutation({
         await ctx.db.patch(existing._id, {
           title: post.title,
           description: post.description,
-          content: post.content,
+          contentCid: post.contentCid,
+          storageType: "ipfs",
           date: post.date,
           published: post.published,
           tags: post.tags,
@@ -458,6 +465,7 @@ export const syncPosts = internalMutation({
         // Create new post
         await ctx.db.insert("posts", {
           ...post,
+          storageType: "ipfs",
           lastSyncedAt: now,
         });
         created++;
@@ -485,7 +493,7 @@ export const syncPostsPublic = mutation({
         slug: v.string(),
         title: v.string(),
         description: v.string(),
-        content: v.string(),
+        contentCid: v.string(), // IPFS CID instead of content
         date: v.string(),
         published: v.boolean(),
         tags: v.array(v.string()),
@@ -549,7 +557,8 @@ export const syncPostsPublic = mutation({
         await ctx.db.patch(existing._id, {
           title: post.title,
           description: post.description,
-          content: post.content,
+          contentCid: post.contentCid,
+          storageType: "ipfs",
           date: post.date,
           published: post.published,
           tags: post.tags,
@@ -585,6 +594,7 @@ export const syncPostsPublic = mutation({
         // Create new post with source: "sync"
         await ctx.db.insert("posts", {
           ...post,
+          storageType: "ipfs",
           source: "sync",
           lastSyncedAt: now,
         });
@@ -967,7 +977,8 @@ export const getDocsLandingPost = query({
       slug: v.string(),
       title: v.string(),
       description: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       date: v.string(),
       tags: v.array(v.string()),
       readTime: v.optional(v.string()),
@@ -996,7 +1007,8 @@ export const getDocsLandingPost = query({
       slug: landing.slug,
       title: landing.title,
       description: landing.description,
-      content: landing.content,
+      contentCid: landing.contentCid,
+      storageType: landing.storageType,
       date: landing.date,
       tags: landing.tags,
       readTime: landing.readTime,

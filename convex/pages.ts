@@ -10,7 +10,8 @@ export const listAll = query({
       _creationTime: v.number(),
       slug: v.string(),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       published: v.boolean(),
       order: v.optional(v.number()),
       showInNav: v.optional(v.boolean()),
@@ -39,7 +40,8 @@ export const listAll = query({
       _creationTime: page._creationTime,
       slug: page.slug,
       title: page.title,
-      content: page.content,
+      contentCid: page.contentCid,
+      storageType: page.storageType,
       published: page.published,
       order: page.order,
       showInNav: page.showInNav,
@@ -166,7 +168,8 @@ export const getPageBySlug = query({
       _id: v.id("pages"),
       slug: v.string(),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       published: v.boolean(),
       order: v.optional(v.number()),
       showInNav: v.optional(v.boolean()),
@@ -204,7 +207,8 @@ export const getPageBySlug = query({
       _id: page._id,
       slug: page.slug,
       title: page.title,
-      content: page.content,
+      contentCid: page.contentCid,
+      storageType: page.storageType,
       published: page.published,
       order: page.order,
       showInNav: page.showInNav,
@@ -282,7 +286,8 @@ export const getDocsLandingPage = query({
       _id: v.id("pages"),
       slug: v.string(),
       title: v.string(),
-      content: v.string(),
+      contentCid: v.string(), // IPFS CID instead of content
+      storageType: v.union(v.literal("ipfs")),
       image: v.optional(v.string()),
       showImageAtTop: v.optional(v.boolean()),
       authorName: v.optional(v.string()),
@@ -307,7 +312,8 @@ export const getDocsLandingPage = query({
       _id: landing._id,
       slug: landing.slug,
       title: landing.title,
-      content: landing.content,
+      contentCid: landing.contentCid,
+      storageType: landing.storageType,
       image: landing.image,
       showImageAtTop: landing.showImageAtTop,
       authorName: landing.authorName,
@@ -326,7 +332,7 @@ export const syncPagesPublic = mutation({
       v.object({
         slug: v.string(),
         title: v.string(),
-        content: v.string(),
+        contentCid: v.string(), // IPFS CID instead of content
         published: v.boolean(),
         order: v.optional(v.number()),
         showInNav: v.optional(v.boolean()),
@@ -387,7 +393,8 @@ export const syncPagesPublic = mutation({
         // Update existing sync page
         await ctx.db.patch(existing._id, {
           title: page.title,
-          content: page.content,
+          contentCid: page.contentCid,
+          storageType: "ipfs",
           published: page.published,
           order: page.order,
           showInNav: page.showInNav,
@@ -421,6 +428,7 @@ export const syncPagesPublic = mutation({
         // Create new page with source: "sync"
         await ctx.db.insert("pages", {
           ...page,
+          storageType: "ipfs",
           source: "sync",
           lastSyncedAt: now,
         });
