@@ -39,14 +39,37 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Keyword search (reactive query)
-  const keywordResults = useQuery(
-    api.search.search,
-    searchMode === "keyword" && searchQuery.trim() ? { query: searchQuery } : "skip"
-  );
+  // Keyword search (action - includes content search from IPFS)
+  const keywordSearchAction = useAction(api.search.search);
+  const [keywordResults, setKeywordResults] = useState<SearchResult[] | null>(null);
+  const [isKeywordSearching, setIsKeywordSearching] = useState(false);
 
   // Semantic search action
   const semanticSearchAction = useAction(api.semanticSearch.semanticSearch);
+
+  // Trigger keyword search with debounce
+  useEffect(() => {
+    if (searchMode !== "keyword" || !searchQuery.trim()) {
+      setKeywordResults(null);
+      setIsKeywordSearching(false);
+      return;
+    }
+
+    setIsKeywordSearching(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const results = await keywordSearchAction({ query: searchQuery });
+        setKeywordResults(results as SearchResult[]);
+      } catch (error) {
+        console.error("Keyword search error:", error);
+        setKeywordResults([]);
+      } finally {
+        setIsKeywordSearching(false);
+      }
+    }, 300); // 300ms debounce for API calls
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, searchMode, keywordSearchAction]);
 
   // Trigger semantic search with debounce
   useEffect(() => {
@@ -75,11 +98,11 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // Get current results based on mode
   const results: SearchResult[] | undefined =
     searchMode === "keyword"
-      ? (keywordResults as SearchResult[] | undefined)
+      ? (keywordResults ?? undefined)
       : (semanticResults ?? undefined);
   const isLoading =
     searchMode === "keyword"
-      ? keywordResults === undefined && searchQuery.trim() !== ""
+      ? isKeywordSearching
       : isSemanticSearching;
 
   // Focus input when modal opens
