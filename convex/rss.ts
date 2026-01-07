@@ -17,6 +17,32 @@ function getIPFSGatewayUrl(): string {
   return "https://gateway.pinata.cloud";
 }
 
+// Fetch content from IPFS using CID
+async function fetchContentFromIPFS(cid: string): Promise<string> {
+  if (!cid) {
+    throw new Error("CID is required to fetch content from IPFS");
+  }
+
+  const gatewayBase = getIPFSGatewayUrl();
+  const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
+
+  try {
+    const response = await fetch(gatewayUrl);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch content from IPFS: ${response.status} ${response.statusText}`
+      );
+    }
+    const content = await response.text();
+    return content;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
+    }
+    throw new Error(`Failed to fetch content from IPFS: ${String(error)}`);
+  }
+}
+
 // Escape XML special characters
 function escapeXml(text: string): string {
   return text
@@ -68,7 +94,7 @@ function generateRssXml(
 }
 
 // Generate RSS XML with full content (for LLMs and readers)
-// Note: Content is stored on IPFS, RSS includes CID and link to fetch content
+// Now includes actual markdown content fetched from IPFS
 function generateFullRssXml(
   posts: Array<{
     title: string;
@@ -76,6 +102,7 @@ function generateFullRssXml(
     slug: string;
     date: string;
     contentCid: string;
+    content: string; // Full markdown content fetched from IPFS
     readTime?: string;
     tags: string[];
   }>,
@@ -84,8 +111,8 @@ function generateFullRssXml(
     .map((post) => {
       const pubDate = new Date(post.date).toUTCString();
       const url = `${SITE_URL}/${post.slug}`;
-      const gatewayBase = getIPFSGatewayUrl();
-      const contentUrl = `${gatewayBase}/ipfs/${post.contentCid}`;
+      // Escape content for XML CDATA (CDATA already handles most escaping, but we escape & for safety)
+      const escapedContent = post.content.replace(/]]>/g, "]]&gt;");
 
       return `
     <item>
@@ -94,7 +121,7 @@ function generateFullRssXml(
       <guid>${url}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(post.description)}</description>
-      <content:encoded><![CDATA[Content stored on IPFS. Fetch from: ${contentUrl} (CID: ${post.contentCid})]]></content:encoded>
+      <content:encoded><![CDATA[${escapedContent}]]></content:encoded>
       ${post.tags.map((tag) => `<category>${escapeXml(tag)}</category>`).join("\n      ")}
     </item>`;
     })
@@ -139,27 +166,55 @@ export const rssFeed = httpAction(async (ctx) => {
 export const rssFullFeed = httpAction(async (ctx) => {
   const posts = await ctx.runQuery(api.posts.getAllPosts);
 
-  // Fetch full content for each post
+  // Fetch full content for each post from IPFS
   const fullPosts = await Promise.all(
     posts.map(async (post: { title: string; description: string; slug: string; date: string; readTime?: string; tags: string[] }) => {
       const fullPost = await ctx.runQuery(api.posts.getPostBySlug, {
         slug: post.slug,
       });
-      // Note: Content is stored on IPFS, RSS feed includes CID
-      // Clients should fetch content from the configured IPFS gateway
-      return {
-        title: post.title,
-        description: post.description,
-        slug: post.slug,
-        date: post.date,
-        contentCid: fullPost?.contentCid || "",
-        readTime: post.readTime,
-        tags: post.tags,
-      };
+
+      if (!fullPost || !fullPost.contentCid) {
+        // Skip posts without content CID
+        return null;
+      }
+
+      try {
+        // Fetch actual content from IPFS
+        const content = await fetchContentFromIPFS(fullPost.contentCid);
+        
+        return {
+          title: post.title,
+          description: post.description,
+          slug: post.slug,
+          date: post.date,
+          contentCid: fullPost.contentCid,
+          content, // Full markdown content from IPFS
+          readTime: post.readTime,
+          tags: post.tags,
+        };
+      } catch (error) {
+        // If fetching fails, log error but still include post with empty content
+        console.error(`Failed to fetch content for post ${post.slug}:`, error);
+        return {
+          title: post.title,
+          description: post.description,
+          slug: post.slug,
+          date: post.date,
+          contentCid: fullPost.contentCid,
+          content: `[Error: Could not fetch content from IPFS. CID: ${fullPost.contentCid}]`,
+          readTime: post.readTime,
+          tags: post.tags,
+        };
+      }
     }),
   );
 
-  const xml = generateFullRssXml(fullPosts);
+  // Filter out null posts (posts without contentCid)
+  const validPosts = fullPosts.filter(
+    (post): post is NonNullable<typeof post> => post !== null
+  );
+
+  const xml = generateFullRssXml(validPosts);
 
   return new Response(xml, {
     headers: {
