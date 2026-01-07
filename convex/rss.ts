@@ -7,6 +7,16 @@ const SITE_TITLE = "markdown sync framework";
 const SITE_DESCRIPTION =
   "An open-source publishing framework built for AI agents and developers to ship websites, docs, or blogs. Write markdown, sync from the terminal. Your content is instantly available to browsers, LLMs, and AI agents. Built on Convex and Netlify.";
 
+// Get IPFS gateway URL from environment variable or use default
+function getIPFSGatewayUrl(): string {
+  const customGateway = process.env.PINATA_GATEWAY_URL;
+  if (customGateway) {
+    // If custom gateway is provided, assume it's a full domain (e.g., "plum-quickest-ant-289.mypinata.cloud")
+    return `https://${customGateway}`;
+  }
+  return "https://gateway.pinata.cloud";
+}
+
 // Escape XML special characters
 function escapeXml(text: string): string {
   return text
@@ -74,7 +84,8 @@ function generateFullRssXml(
     .map((post) => {
       const pubDate = new Date(post.date).toUTCString();
       const url = `${SITE_URL}/${post.slug}`;
-      const contentUrl = `https://gateway.pinata.cloud/ipfs/${post.contentCid}`;
+      const gatewayBase = getIPFSGatewayUrl();
+      const contentUrl = `${gatewayBase}/ipfs/${post.contentCid}`;
 
       return `
     <item>
@@ -135,7 +146,7 @@ export const rssFullFeed = httpAction(async (ctx) => {
         slug: post.slug,
       });
       // Note: Content is stored on IPFS, RSS feed includes CID
-      // Clients should fetch content from https://gateway.pinata.cloud/ipfs/${fullPost?.contentCid}
+      // Clients should fetch content from the configured IPFS gateway
       return {
         title: post.title,
         description: post.description,

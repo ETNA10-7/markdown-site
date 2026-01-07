@@ -15,8 +15,13 @@ export async function fetchContentFromIPFS(cid: string): Promise<string> {
     throw new Error("CID is required to fetch content from IPFS");
   }
 
-  // Use Pinata public gateway
-  const gatewayUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
+  // Get gateway URL from environment variable or use default
+  // Vite requires VITE_ prefix for env vars exposed to client
+  const customGateway = import.meta.env.VITE_PINATA_GATEWAY_URL;
+  const gatewayBase = customGateway
+    ? `https://${customGateway}`
+    : "https://gateway.pinata.cloud";
+  const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
 
   try {
     const response = await fetch(gatewayUrl);

@@ -9,6 +9,16 @@ const http = httpRouter();
 const SITE_URL = process.env.SITE_URL || "https://www.markdown.fast";
 const SITE_NAME = "markdown sync framework";
 
+// Get IPFS gateway URL from environment variable or use default
+function getIPFSGatewayUrl(): string {
+  const customGateway = process.env.PINATA_GATEWAY_URL;
+  if (customGateway) {
+    // If custom gateway is provided, assume it's a full domain (e.g., "plum-quickest-ant-289.mypinata.cloud")
+    return `https://${customGateway}`;
+  }
+  return "https://gateway.pinata.cloud";
+}
+
 // RSS feed endpoint (descriptions only)
 http.route({
   path: "/rss.xml",
@@ -149,8 +159,10 @@ http.route({
     }
 
     // Return raw markdown if requested
-    // Note: Content is stored on IPFS, fetch from https://gateway.pinata.cloud/ipfs/${post.contentCid}
+    // Note: Content is stored on IPFS, fetch from the configured IPFS gateway
     if (format === "markdown" || format === "md") {
+      const gatewayBase = getIPFSGatewayUrl();
+      const contentUrl = `${gatewayBase}/ipfs/${post.contentCid}`;
       const markdown = `# ${post.title}
 
 > ${post.description}
@@ -162,7 +174,7 @@ http.route({
 
 ---
 
-Content is stored on IPFS. Fetch from: https://gateway.pinata.cloud/ipfs/${post.contentCid}`;
+Content is stored on IPFS. Fetch from: ${contentUrl}`;
 
       return new Response(markdown, {
         headers: {
@@ -174,6 +186,7 @@ Content is stored on IPFS. Fetch from: https://gateway.pinata.cloud/ipfs/${post.
     }
 
     // Default: JSON response
+    const gatewayBase = getIPFSGatewayUrl();
     const response = {
       title: post.title,
       slug: post.slug,
@@ -183,7 +196,7 @@ Content is stored on IPFS. Fetch from: https://gateway.pinata.cloud/ipfs/${post.
       tags: post.tags,
       url: `${SITE_URL}/${post.slug}`,
       contentCid: post.contentCid,
-      contentUrl: `https://gateway.pinata.cloud/ipfs/${post.contentCid}`,
+      contentUrl: `${gatewayBase}/ipfs/${post.contentCid}`,
       note: "Content is stored on IPFS. Fetch from contentUrl to get the markdown content.",
     };
 
@@ -219,7 +232,7 @@ http.route({
           tags: post.tags,
           url: `${SITE_URL}/${post.slug}`,
           contentCid: fullPost?.contentCid || "",
-          contentUrl: fullPost?.contentCid ? `https://gateway.pinata.cloud/ipfs/${fullPost.contentCid}` : "",
+          contentUrl: fullPost?.contentCid ? `${getIPFSGatewayUrl()}/ipfs/${fullPost.contentCid}` : "",
         };
       }),
     );

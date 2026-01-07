@@ -10,3 +10,4 @@ mkdir -p "$TMPDIR"
 exec bunx convex dev "$@"
 
 
+
