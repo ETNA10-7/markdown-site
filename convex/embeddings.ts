@@ -5,6 +5,55 @@ import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import OpenAI from "openai";
 
+// Get IPFS gateway URL from environment variable or use default
+function getIPFSGatewayUrl(): string {
+  const customGateway = process.env.PINATA_GATEWAY_URL;
+  if (customGateway) {
+    return `https://${customGateway}`;
+  }
+  return "https://gateway.pinata.cloud";
+}
+
+// Fetch content from IPFS using CID
+async function fetchContentFromIPFS(cid: string): Promise<string> {
+  if (!cid) {
+    throw new Error("CID is required to fetch content from IPFS");
+  }
+
+  const gatewayBase = getIPFSGatewayUrl();
+  const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
+
+  try {
+    const response = await fetch(gatewayUrl);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch content from IPFS: ${response.status} ${response.statusText}`
+      );
+    }
+    const content = await response.text();
+    return content;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
+    }
+    throw new Error(`Failed to fetch content from IPFS: ${String(error)}`);
+  }
+}
+
+// Prepare text for embedding: combine title and content
+function prepareTextForEmbedding(title: string, content: string): string {
+  // Combine title and content, with title first for better semantic understanding
+  // Remove markdown syntax that doesn't add semantic value
+  const cleanContent = content
+    .replace(/```[\s\S]*?```/g, "") // Remove code blocks (keep inline code)
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "") // Remove images
+    .replace(/\n{3,}/g, "\n\n") // Normalize multiple newlines
+    .trim();
+
+  // Combine title and content
+  return `${title}\n\n${cleanContent}`;
+}
+
 // Generate embedding for text using OpenAI text-embedding-ada-002
 export const generateEmbedding = internalAction({
   args: { text: v.string() },
@@ -38,9 +87,21 @@ export const generatePostEmbeddings = internalAction({
     let processed = 0;
     for (const post of posts) {
       try {
-        // Note: Content is stored on IPFS, embeddings use title only for now
-        // TODO: Fetch content from IPFS to generate full embeddings
-        const textToEmbed = post.title;
+        // Fetch full content from IPFS
+        let content = "";
+        try {
+          content = await fetchContentFromIPFS(post.contentCid);
+        } catch (error) {
+          console.error(`Failed to fetch content from IPFS for post ${post._id}:`, error);
+          // Fallback to title-only if IPFS fetch fails
+          content = "";
+        }
+
+        // Prepare text for embedding: title + content
+        const textToEmbed = content
+          ? prepareTextForEmbedding(post.title, content)
+          : post.title; // Fallback to title only if content fetch failed
+
         const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
           text: textToEmbed,
         });
@@ -71,9 +132,21 @@ export const generatePageEmbeddings = internalAction({
     let processed = 0;
     for (const page of pages) {
       try {
-        // Note: Content is stored on IPFS, embeddings use title only for now
-        // TODO: Fetch content from IPFS to generate full embeddings
-        const textToEmbed = page.title;
+        // Fetch full content from IPFS
+        let content = "";
+        try {
+          content = await fetchContentFromIPFS(page.contentCid);
+        } catch (error) {
+          console.error(`Failed to fetch content from IPFS for page ${page._id}:`, error);
+          // Fallback to title-only if IPFS fetch fails
+          content = "";
+        }
+
+        // Prepare text for embedding: title + content
+        const textToEmbed = content
+          ? prepareTextForEmbedding(page.title, content)
+          : page.title; // Fallback to title only if content fetch failed
+
         const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
           text: textToEmbed,
         });
@@ -147,9 +220,21 @@ export const regeneratePostEmbedding = action({
     }
 
     try {
-      // Note: Content is stored on IPFS, embeddings use title only for now
-      // TODO: Fetch content from IPFS to generate full embeddings
-      const textToEmbed = post.title;
+      // Fetch full content from IPFS
+      let content = "";
+      try {
+        content = await fetchContentFromIPFS(post.contentCid);
+      } catch (error) {
+        console.error(`Failed to fetch content from IPFS for post ${post._id}:`, error);
+        // Fallback to title-only if IPFS fetch fails
+        content = "";
+      }
+
+      // Prepare text for embedding: title + content
+      const textToEmbed = content
+        ? prepareTextForEmbedding(post.title, content)
+        : post.title; // Fallback to title only if content fetch failed
+
       const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
         text: textToEmbed,
       });
