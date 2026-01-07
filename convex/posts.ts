@@ -486,6 +486,7 @@ export const syncPosts = internalMutation({
 
 // Public mutation wrapper for sync script (no auth required for build-time sync)
 // Respects source field: only syncs posts where source !== "dashboard"
+// Sync posts with IPFS content storage (contentCid instead of content)
 export const syncPostsPublic = mutation({
   args: {
     posts: v.array(
@@ -493,7 +494,7 @@ export const syncPostsPublic = mutation({
         slug: v.string(),
         title: v.string(),
         description: v.string(),
-        contentCid: v.string(), // IPFS CID instead of content
+        contentCid: v.string(), // IPFS CID - content stored on IPFS, NOT in Convex
         storageType: v.union(v.literal("ipfs")), // Storage type identifier
         date: v.string(),
         published: v.boolean(),
