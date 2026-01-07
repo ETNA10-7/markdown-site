@@ -333,6 +333,7 @@ export const syncPagesPublic = mutation({
         slug: v.string(),
         title: v.string(),
         contentCid: v.string(), // IPFS CID instead of content
+        storageType: v.union(v.literal("ipfs")), // Storage type identifier
         published: v.boolean(),
         order: v.optional(v.number()),
         showInNav: v.optional(v.boolean()),

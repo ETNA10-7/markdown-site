@@ -494,6 +494,7 @@ export const syncPostsPublic = mutation({
         title: v.string(),
         description: v.string(),
         contentCid: v.string(), // IPFS CID instead of content
+        storageType: v.union(v.literal("ipfs")), // Storage type identifier
         date: v.string(),
         published: v.boolean(),
         tags: v.array(v.string()),

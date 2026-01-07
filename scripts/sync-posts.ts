@@ -157,6 +157,7 @@ interface PostForConvex {
   title: string;
   description: string;
   contentCid: string; // IPFS CID instead of content
+  storageType: "ipfs"; // Storage type identifier
   date: string;
   published: boolean;
   tags: string[];
@@ -191,6 +192,7 @@ interface PageForConvex {
   slug: string;
   title: string;
   contentCid: string; // IPFS CID instead of content
+  storageType: "ipfs"; // Storage type identifier
   published: boolean;
   order?: number;
   showInNav?: boolean;
@@ -369,6 +371,7 @@ async function uploadPostToIPFS(post: ParsedPost): Promise<PostForConvex> {
     title: post.title,
     description: post.description,
     contentCid, // IPFS CID instead of content
+    storageType: "ipfs" as const, // Storage type identifier
     date: post.date,
     published: post.published,
     tags: post.tags,
@@ -409,6 +412,7 @@ async function uploadPageToIPFS(page: ParsedPage): Promise<PageForConvex> {
     slug: page.slug,
     title: page.title,
     contentCid, // IPFS CID instead of content
+    storageType: "ipfs" as const, // Storage type identifier
     published: page.published,
     order: page.order,
     showInNav: page.showInNav,
