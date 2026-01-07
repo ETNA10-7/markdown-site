@@ -19,6 +19,32 @@ function getIPFSGatewayUrl(): string {
   return "https://gateway.pinata.cloud";
 }
 
+// Fetch content from IPFS using CID
+async function fetchContentFromIPFS(cid: string): Promise<string> {
+  if (!cid) {
+    throw new Error("CID is required to fetch content from IPFS");
+  }
+
+  const gatewayBase = getIPFSGatewayUrl();
+  const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
+
+  try {
+    const response = await fetch(gatewayUrl);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch content from IPFS: ${response.status} ${response.statusText}`
+      );
+    }
+    const content = await response.text();
+    return content;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
+    }
+    throw new Error(`Failed to fetch content from IPFS: ${String(error)}`);
+  }
+}
+
 // RSS feed endpoint (descriptions only)
 http.route({
   path: "/rss.xml",
@@ -158,25 +184,29 @@ http.route({
       });
     }
 
+    // Fetch content from IPFS
+    let content: string;
+    try {
+      content = await fetchContentFromIPFS(post.contentCid);
+    } catch (error) {
+      // If IPFS fetch fails, return error response
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to fetch content from IPFS",
+          message: errorMessage,
+          contentCid: post.contentCid,
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Return raw markdown if requested
-    // Note: Content is stored on IPFS, fetch from the configured IPFS gateway
     if (format === "markdown" || format === "md") {
-      const gatewayBase = getIPFSGatewayUrl();
-      const contentUrl = `${gatewayBase}/ipfs/${post.contentCid}`;
-      const markdown = `# ${post.title}
-
-> ${post.description}
-
-**Published:** ${post.date}${post.readTime ? ` | **Read time:** ${post.readTime}` : ""}
-**Tags:** ${post.tags.join(", ")}
-**URL:** ${SITE_URL}/${post.slug}
-**Content CID:** ${post.contentCid}
-
----
-
-Content is stored on IPFS. Fetch from: ${contentUrl}`;
-
-      return new Response(markdown, {
+      return new Response(content, {
         headers: {
           "Content-Type": "text/markdown; charset=utf-8",
           "Cache-Control": "public, max-age=300, s-maxage=600",
@@ -185,8 +215,7 @@ Content is stored on IPFS. Fetch from: ${contentUrl}`;
       });
     }
 
-    // Default: JSON response
-    const gatewayBase = getIPFSGatewayUrl();
+    // Default: JSON response with full content
     const response = {
       title: post.title,
       slug: post.slug,
@@ -196,8 +225,7 @@ Content is stored on IPFS. Fetch from: ${contentUrl}`;
       tags: post.tags,
       url: `${SITE_URL}/${post.slug}`,
       contentCid: post.contentCid,
-      contentUrl: `${gatewayBase}/ipfs/${post.contentCid}`,
-      note: "Content is stored on IPFS. Fetch from contentUrl to get the markdown content.",
+      content, // Full markdown content fetched from IPFS
     };
 
     return new Response(JSON.stringify(response, null, 2), {
@@ -217,23 +245,58 @@ http.route({
   handler: httpAction(async (ctx) => {
     const posts = await ctx.runQuery(api.posts.getAllPosts);
 
-    // Fetch full content for each post
+    // Fetch full content for each post from IPFS
     const fullPosts = await Promise.all(
       posts.map(async (post: { title: string; slug: string; description: string; date: string; readTime?: string; tags: string[] }) => {
         const fullPost = await ctx.runQuery(api.posts.getPostBySlug, {
           slug: post.slug,
         });
-        return {
-          title: post.title,
-          slug: post.slug,
-          description: post.description,
-          date: post.date,
-          readTime: post.readTime,
-          tags: post.tags,
-          url: `${SITE_URL}/${post.slug}`,
-          contentCid: fullPost?.contentCid || "",
-          contentUrl: fullPost?.contentCid ? `${getIPFSGatewayUrl()}/ipfs/${fullPost.contentCid}` : "",
-        };
+
+        if (!fullPost || !fullPost.contentCid) {
+          // Skip posts without content CID
+          return {
+            title: post.title,
+            slug: post.slug,
+            description: post.description,
+            date: post.date,
+            readTime: post.readTime,
+            tags: post.tags,
+            url: `${SITE_URL}/${post.slug}`,
+            contentCid: "",
+            content: "[Error: No content CID available]",
+          };
+        }
+
+        try {
+          // Fetch actual content from IPFS
+          const content = await fetchContentFromIPFS(fullPost.contentCid);
+          
+          return {
+            title: post.title,
+            slug: post.slug,
+            description: post.description,
+            date: post.date,
+            readTime: post.readTime,
+            tags: post.tags,
+            url: `${SITE_URL}/${post.slug}`,
+            contentCid: fullPost.contentCid,
+            content, // Full markdown content from IPFS
+          };
+        } catch (error) {
+          // If fetching fails, include error message
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          return {
+            title: post.title,
+            slug: post.slug,
+            description: post.description,
+            date: post.date,
+            readTime: post.readTime,
+            tags: post.tags,
+            url: `${SITE_URL}/${post.slug}`,
+            contentCid: fullPost.contentCid,
+            content: `[Error: Failed to fetch content from IPFS - ${errorMessage}]`,
+          };
+        }
       }),
     );
 
