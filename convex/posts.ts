@@ -488,6 +488,7 @@ export const syncPosts = internalMutation({
 // Respects source field: only syncs posts where source !== "dashboard"
 // Sync posts with IPFS content storage (contentCid instead of content)
 // UPDATED: Now uses contentCid and storageType for IPFS storage
+// FORCE RECOMPILE: Updated to use contentCid (not content) - v1.31.3
 export const syncPostsPublic = mutation({
   args: {
     posts: v.array(

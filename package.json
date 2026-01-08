@@ -38,7 +38,7 @@
     "@workos-inc/authkit-react": "^0.15.0",
     "@workos-inc/widgets": "^1.6.1",
     "agentmail": "^0.1.15",
-    "convex": "^1.31.2",
+    "convex": "^1.31.3",
     "date-fns": "^3.3.1",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.344.0",
