@@ -1,5 +1,6 @@
 import { defineApp } from "convex/server";
-import aggregate from "@convex-dev/aggregate/convex.config.js";
+// @ts-ignore - Package exports work at runtime but TypeScript needs help resolving
+import aggregate from "@convex-dev/aggregate/convex.config";
 
 const app = defineApp();
 
