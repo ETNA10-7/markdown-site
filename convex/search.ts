@@ -90,7 +90,8 @@ export const searchTitleOnly = query({
     for (const post of postsByTitle) {
       if (seenPostIds.has(post._id)) continue;
       seenPostIds.add(post._id);
-      if (post.unlisted) continue;
+      // Search index doesn't return all fields, so check unlisted safely
+      if ((post as any).unlisted) continue;
 
       const snippet = post.description
         ? post.description.slice(0, 120) + (post.description.length > 120 ? "..." : "")
@@ -182,7 +183,8 @@ export const search = action({
 
     // Search in post content
     for (const post of allPosts) {
-      if (addedIds.has(post._id) || post.unlisted) continue;
+      // Type assertion needed until Convex regenerates types after schema update
+      if (addedIds.has(post._id) || (post as any).unlisted) continue;
 
       try {
         const fullPost = await ctx.runQuery(api.posts.getPostBySlug, {

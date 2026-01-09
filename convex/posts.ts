@@ -82,6 +82,7 @@ export const getAllPosts = query({
       showFooter: v.optional(v.boolean()),
       footer: v.optional(v.string()),
       blogFeatured: v.optional(v.boolean()),
+      unlisted: v.optional(v.boolean()),
     }),
   ),
   handler: async (ctx) => {

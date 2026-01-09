@@ -1,6 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-
+// Schema hang test whether it woorks correctly
 export default defineSchema({
   // Blog posts table
   posts: defineTable({
