@@ -30,6 +30,7 @@
     "@anthropic-ai/sdk": "^0.71.2",
     "@convex-dev/aggregate": "^0.2.0",
     "@convex-dev/workos": "^0.0.1",
+    "@convex-dev/workos-authkit": "^0.1.4",
     "@google/genai": "^1.0.1",
     "@mendable/firecrawl-js": "^1.21.1",
     "@modelcontextprotocol/sdk": "^1.0.0",
