@@ -239,9 +239,9 @@ export default function DocsSidebar({ currentSlug, isMobile }: DocsSidebarProps)
     return result;
   }, [allDocsItems]);
 
-  // Expanded state for groups
+  // Expanded state for groups - initialize from localStorage only
   const [expanded, setExpanded] = useState<Set<string>>(() => {
-    // Load from localStorage or default to all expanded
+    // Load from localStorage only, don't use groups here (groups not ready yet)
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -253,12 +253,13 @@ export default function DocsSidebar({ currentSlug, isMobile }: DocsSidebarProps)
     } catch {
       // Ignore parsing errors
     }
-    // Default: expand all groups if siteConfig says so
-    if (siteConfig.docsSection?.defaultExpanded) {
-      return new Set(groups.map((g) => g.name));
-    }
     return new Set<string>();
   });
+
+  // Create stable reference for group names (serialized version for dependency comparison)
+  const groupNames = useMemo(() => {
+    return groups.map((g) => g.name).join(",");
+  }, [groups]);
 
   // Persist expanded state to localStorage
   useEffect(() => {
@@ -270,19 +271,39 @@ export default function DocsSidebar({ currentSlug, isMobile }: DocsSidebarProps)
   }, [expanded]);
 
   // Update expanded state when groups change (ensure new groups are expanded if defaultExpanded)
+  // Use groupNames (stable string) instead of groups (unstable array reference) as dependency
+  // groupNames changes only when actual group names change, preventing infinite loops
   useEffect(() => {
-    if (siteConfig.docsSection?.defaultExpanded && groups.length > 0) {
-      setExpanded((prev) => {
-        const newExpanded = new Set(prev);
-        for (const group of groups) {
-          if (group.name && !prev.has(group.name)) {
-            newExpanded.add(group.name);
-          }
-        }
-        return newExpanded;
-      });
+    if (!siteConfig.docsSection?.defaultExpanded || groups.length === 0) {
+      return;
     }
-  }, [groups]);
+
+    setExpanded((prev) => {
+      // Check if there are any new groups that need to be added
+      let hasNewGroups = false;
+      for (const group of groups) {
+        if (group.name && !prev.has(group.name)) {
+          hasNewGroups = true;
+          break;
+        }
+      }
+
+      // Only create new Set if there are actual changes (prevents unnecessary re-renders)
+      if (!hasNewGroups) {
+        return prev; // Return same reference if no changes
+      }
+
+      // Create new Set with new groups added
+      const newExpanded = new Set(prev);
+      for (const group of groups) {
+        if (group.name && !prev.has(group.name)) {
+          newExpanded.add(group.name);
+        }
+      }
+      return newExpanded;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupNames]); // Only depend on stable groupNames string, groups is read inside (safe because groupNames changes when groups change)
 
   // Get current slug from URL if not provided
   const activeSlug = currentSlug || location.pathname.replace(/^\//, "");
