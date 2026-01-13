@@ -38,7 +38,7 @@ export default defineSchema({
     docsLanding: v.optional(v.boolean()), // Use as /docs landing page
     lastSyncedAt: v.number(),
     source: v.optional(v.union(v.literal("dashboard"), v.literal("sync"))), // Content source: "dashboard" (created in UI) or "sync" (from markdown files)
-    embedding: v.optional(v.array(v.float64())), // Vector embedding for semantic search (1536 dimensions, OpenAI text-embedding-ada-002)
+    embedding: v.optional(v.array(v.float64())), // Vector embedding for semantic search (384 dimensions, Hugging Face sentence-transformers/all-MiniLM-L6-v2)
   })
     .index("by_slug", ["slug"])
     .index("by_date", ["date"])
@@ -56,7 +56,7 @@ export default defineSchema({
     })
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
-      dimensions: 1536,
+      dimensions: 384,
       filterFields: ["published"],
     }),
 
@@ -93,7 +93,7 @@ export default defineSchema({
     docsLanding: v.optional(v.boolean()), // Use as /docs landing page
     lastSyncedAt: v.number(),
     source: v.optional(v.union(v.literal("dashboard"), v.literal("sync"))), // Content source: "dashboard" (created in UI) or "sync" (from markdown files)
-    embedding: v.optional(v.array(v.float64())), // Vector embedding for semantic search (1536 dimensions, OpenAI text-embedding-ada-002)
+    embedding: v.optional(v.array(v.float64())), // Vector embedding for semantic search (384 dimensions, Hugging Face sentence-transformers/all-MiniLM-L6-v2)
   })
   .index("by_slug", ["slug"])
   .index("by_published", ["published"])
@@ -108,7 +108,7 @@ export default defineSchema({
     })
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
-      dimensions: 1536,
+      dimensions: 384,
       filterFields: ["published"],
     }),
 

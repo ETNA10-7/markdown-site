@@ -3,7 +3,9 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
-import OpenAI from "openai";
+// Hugging Face model for embeddings
+const HUGGINGFACE_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
+const HUGGINGFACE_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${HUGGINGFACE_MODEL}`;
 
 // Search result type matching existing search.ts format
 const searchResultValidator = v.object({
@@ -26,20 +28,36 @@ export const semanticSearch = action({
       return [];
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.HUGGINGFACE_API_KEY;
     if (!apiKey) {
       // Gracefully return empty if not configured
-      console.log("OPENAI_API_KEY not set, semantic search unavailable");
+      console.log("HUGGINGFACE_API_KEY not set, semantic search unavailable");
       return [];
     }
 
-    // Generate embedding for search query
-    const openai = new OpenAI({ apiKey });
-    const embeddingResponse = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: args.query,
+    // Generate embedding for search query using Hugging Face
+    const response = await fetch(HUGGINGFACE_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputs: args.query }),
     });
-    const queryEmbedding = embeddingResponse.data[0].embedding;
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Hugging Face API error: ${response.status} ${response.statusText} - ${errorText}`);
+      return [];
+    }
+
+    const queryEmbedding = await response.json();
+    
+    // Ensure it's an array of numbers
+    if (!Array.isArray(queryEmbedding) || queryEmbedding.length === 0) {
+      console.error("Invalid embedding response from Hugging Face API");
+      return [];
+    }
 
     // Search posts using vector index
     const postResults = await ctx.vectorSearch("posts", "by_embedding", {
@@ -132,7 +150,7 @@ export const isSemanticSearchAvailable = action({
   args: {},
   returns: v.boolean(),
   handler: async () => {
-    return !!process.env.OPENAI_API_KEY;
+    return !!process.env.HUGGINGFACE_API_KEY;
   },
 });
 

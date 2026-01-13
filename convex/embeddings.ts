@@ -3,7 +3,9 @@
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import OpenAI from "openai";
+// Hugging Face model for embeddings
+const HUGGINGFACE_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
+const HUGGINGFACE_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${HUGGINGFACE_MODEL}`;
 
 // Get IPFS gateway URL from environment variable or use default
 function getIPFSGatewayUrl(): string {
@@ -91,23 +93,43 @@ function prepareTextForEmbedding(title: string, content: string): string {
   return `${title}\n\n${cleanContent}`;
 }
 
-// Generate embedding for text using OpenAI text-embedding-ada-002
+// Generate embedding for text using Hugging Face sentence-transformers/all-MiniLM-L6-v2
 export const generateEmbedding = internalAction({
   args: { text: v.string() },
   returns: v.array(v.float64()),
   handler: async (_ctx, { text }) => {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.HUGGINGFACE_API_KEY;
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY not configured in Convex environment");
+      throw new Error("HUGGINGFACE_API_KEY not configured in Convex environment");
     }
 
-    const openai = new OpenAI({ apiKey });
-    const response = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: text.slice(0, 8000), // Truncate to stay within token limit
+    // Truncate text to reasonable length (Hugging Face models handle up to ~512 tokens)
+    const truncatedText = text.slice(0, 2000);
+
+    // Call Hugging Face Inference API
+    const response = await fetch(HUGGINGFACE_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputs: truncatedText }),
     });
 
-    return response.data[0].embedding;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Hugging Face API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const embedding = await response.json();
+    
+    // Hugging Face returns an array of numbers (the embedding vector)
+    // Ensure it's an array of numbers
+    if (!Array.isArray(embedding) || embedding.length === 0) {
+      throw new Error("Invalid embedding response from Hugging Face API");
+    }
+
+    return embedding as number[];
   },
 });
 
@@ -216,8 +238,8 @@ export const generateMissingEmbeddings = action({
     skipped: boolean;
   }> => {
     // Check for API key first - gracefully skip if not configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.log("OPENAI_API_KEY not set, skipping embedding generation");
+    if (!process.env.HUGGINGFACE_API_KEY) {
+      console.log("HUGGINGFACE_API_KEY not set, skipping embedding generation");
       return { postsProcessed: 0, pagesProcessed: 0, skipped: true };
     }
 
@@ -243,8 +265,8 @@ export const regeneratePostEmbedding = action({
   args: { slug: v.string() },
   returns: v.object({ success: v.boolean(), error: v.optional(v.string()) }),
   handler: async (ctx, args) => {
-    if (!process.env.OPENAI_API_KEY) {
-      return { success: false, error: "OPENAI_API_KEY not configured" };
+    if (!process.env.HUGGINGFACE_API_KEY) {
+      return { success: false, error: "HUGGINGFACE_API_KEY not configured" };
     }
 
     // Find the post by slug

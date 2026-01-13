@@ -557,7 +557,7 @@ async function syncPosts() {
     }
   }
 
-  // Generate embeddings for semantic search (if OPENAI_API_KEY is configured)
+  // Generate embeddings for semantic search (if HUGGINGFACE_API_KEY is configured)
   console.log("\nGenerating embeddings for semantic search...");
   try {
     const embeddingResult = await client.action(
@@ -565,7 +565,7 @@ async function syncPosts() {
       {}
     );
     if (embeddingResult.skipped) {
-      console.log("  Skipped: OPENAI_API_KEY not configured");
+      console.log("  Skipped: HUGGINGFACE_API_KEY not configured");
     } else {
       console.log(`  Posts: ${embeddingResult.postsProcessed} embeddings generated`);
       console.log(`  Pages: ${embeddingResult.pagesProcessed} embeddings generated`);
