@@ -37,12 +37,12 @@ async function fetchContentFromIPFS(cid: string): Promise<string> {
   const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
   const publicGatewayUrl = `${publicGatewayBase}/ipfs/${cid}`;
 
-  // Try custom gateway first, fallback to public gateway on 403 or other errors
+  // Try custom gateway first, fallback to public gateway on 403, 401, 429, or other errors
   try {
     const response = await fetch(gatewayUrl);
     if (!response.ok) {
-      // If custom gateway returns 403 (Forbidden) or 401 (Unauthorized), try public gateway
-      if (response.status === 403 || response.status === 401) {
+      // If custom gateway returns 403 (Forbidden), 401 (Unauthorized), or 429 (Rate Limited), try public gateway
+      if (response.status === 403 || response.status === 401 || response.status === 429) {
         const fallbackResponse = await fetch(publicGatewayUrl);
         if (!fallbackResponse.ok) {
           throw new Error(

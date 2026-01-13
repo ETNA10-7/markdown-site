@@ -5,7 +5,7 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 // Hugging Face model for embeddings
 const HUGGINGFACE_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
-const HUGGINGFACE_API_URL = `https://api-inference.huggingface.co/pipeline/feature-extraction/${HUGGINGFACE_MODEL}`;
+const HUGGINGFACE_API_URL = `https://router.huggingface.co/pipeline/feature-extraction/${HUGGINGFACE_MODEL}`;
 
 // Search result type matching existing search.ts format
 const searchResultValidator = v.object({

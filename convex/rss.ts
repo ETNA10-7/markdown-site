@@ -24,11 +24,24 @@ async function fetchContentFromIPFS(cid: string): Promise<string> {
   }
 
   const gatewayBase = getIPFSGatewayUrl();
+  const publicGatewayBase = "https://gateway.pinata.cloud";
   const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
+  const publicGatewayUrl = `${publicGatewayBase}/ipfs/${cid}`;
 
+  // Try custom gateway first, fallback to public gateway on 403, 401, 429, or other errors
   try {
     const response = await fetch(gatewayUrl);
     if (!response.ok) {
+      // If custom gateway returns 403 (Forbidden), 401 (Unauthorized), or 429 (Rate Limited), try public gateway
+      if (response.status === 403 || response.status === 401 || response.status === 429) {
+        const fallbackResponse = await fetch(publicGatewayUrl);
+        if (!fallbackResponse.ok) {
+          throw new Error(
+            `Failed to fetch content from IPFS: ${fallbackResponse.status} ${fallbackResponse.statusText}`
+          );
+        }
+        return await fallbackResponse.text();
+      }
       throw new Error(
         `Failed to fetch content from IPFS: ${response.status} ${response.statusText}`
       );
@@ -36,6 +49,26 @@ async function fetchContentFromIPFS(cid: string): Promise<string> {
     const content = await response.text();
     return content;
   } catch (error) {
+    // If custom gateway fails completely, try public gateway as fallback
+    if (gatewayBase !== publicGatewayBase) {
+      try {
+        const fallbackResponse = await fetch(publicGatewayUrl);
+        if (!fallbackResponse.ok) {
+          throw new Error(
+            `Failed to fetch content from IPFS: ${fallbackResponse.status} ${fallbackResponse.statusText}`
+          );
+        }
+        return await fallbackResponse.text();
+      } catch (fallbackError) {
+        // If both fail, throw the original error
+        if (error instanceof Error) {
+          throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
+        }
+        throw new Error(`Failed to fetch content from IPFS: ${String(error)}`);
+      }
+    }
+    
+    // If already using public gateway or fallback failed, throw error
     if (error instanceof Error) {
       throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
     }
