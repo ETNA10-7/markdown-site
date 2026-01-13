@@ -108,7 +108,8 @@ export const semanticSearch = action({
     // Map posts with scores
     for (const result of postResults) {
       const post = posts.find((p) => p._id === result._id);
-      if (post) {
+      // Explicitly skip unlisted posts (defensive check - query already filters, but this adds safety)
+      if (post && !post.unlisted) {
         // Note: Content is on IPFS, use description as snippet
         results.push({
           _id: String(post._id),

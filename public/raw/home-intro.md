@@ -2,7 +2,7 @@
 
 ---
 Type: page
-Date: 2026-01-09
+Date: 2026-01-13
 ---
 
 An open-source publishing framework built for AI agents and developers to ship **[docs](/docs)**, or **[blogs](/blog)** or **[websites](/)**.
