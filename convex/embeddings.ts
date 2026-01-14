@@ -5,7 +5,8 @@ import { action, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 // Hugging Face model for embeddings
 const HUGGINGFACE_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
-const HUGGINGFACE_API_URL = `https://router.huggingface.co/pipeline/feature-extraction/${HUGGINGFACE_MODEL}`;
+// Router API format: https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction
+const HUGGINGFACE_API_URL = `https://router.huggingface.co/hf-inference/models/${HUGGINGFACE_MODEL}/pipeline/feature-extraction`;
 
 // Get IPFS gateway URL from environment variable or use default
 function getIPFSGatewayUrl(): string {
@@ -106,7 +107,8 @@ export const generateEmbedding = internalAction({
     // Truncate text to reasonable length (Hugging Face models handle up to ~512 tokens)
     const truncatedText = text.slice(0, 2000);
 
-    // Call Hugging Face Inference API
+    // Call Hugging Face Router API
+    // Router API format: https://router.huggingface.co/models/{model}
     const response = await fetch(HUGGINGFACE_API_URL, {
       method: "POST",
       headers: {

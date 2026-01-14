@@ -5,7 +5,8 @@ import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
 // Hugging Face model for embeddings
 const HUGGINGFACE_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
-const HUGGINGFACE_API_URL = `https://router.huggingface.co/pipeline/feature-extraction/${HUGGINGFACE_MODEL}`;
+// Router API format: https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction
+const HUGGINGFACE_API_URL = `https://router.huggingface.co/hf-inference/models/${HUGGINGFACE_MODEL}/pipeline/feature-extraction`;
 
 // Search result type matching existing search.ts format
 const searchResultValidator = v.object({
@@ -36,6 +37,10 @@ export const semanticSearch = action({
     }
 
     // Generate embedding for search query using Hugging Face
+    // Router API format: https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction
+    console.log(`Generating embedding for query: "${args.query}"`);
+    console.log(`Using endpoint: ${HUGGINGFACE_API_URL}`);
+    
     const response = await fetch(HUGGINGFACE_API_URL, {
       method: "POST",
       headers: {
@@ -47,15 +52,38 @@ export const semanticSearch = action({
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Hugging Face API error: ${response.status} ${response.statusText} - ${errorText}`);
+      console.error(`Hugging Face Router API error: ${response.status} ${response.statusText}`);
+      console.error(`Error details: ${errorText}`);
+      console.error(`Request URL: ${HUGGINGFACE_API_URL}`);
+      console.error(`Model: ${HUGGINGFACE_MODEL}`);
+      // Return empty array gracefully - semantic search unavailable
+      // User can use keyword search instead
       return [];
     }
 
-    const queryEmbedding = await response.json();
+    const responseData = await response.json();
+    
+    // Handle different response formats from Hugging Face API
+    let queryEmbedding: number[];
+    if (Array.isArray(responseData)) {
+      // Direct array format: [0.1, 0.2, ...]
+      queryEmbedding = responseData;
+    } else if (Array.isArray(responseData[0])) {
+      // Nested array format: [[0.1, 0.2, ...]]
+      queryEmbedding = responseData[0];
+    } else if (responseData.embeddings && Array.isArray(responseData.embeddings[0])) {
+      // Object with embeddings key: {embeddings: [[0.1, 0.2, ...]]}
+      queryEmbedding = responseData.embeddings[0];
+    } else {
+      console.error("Invalid embedding response format from Hugging Face API");
+      console.error("Response data:", JSON.stringify(responseData).slice(0, 200));
+      return [];
+    }
     
     // Ensure it's an array of numbers
     if (!Array.isArray(queryEmbedding) || queryEmbedding.length === 0) {
-      console.error("Invalid embedding response from Hugging Face API");
+      console.error("Invalid embedding response from Hugging Face API - not an array or empty");
+      console.error("Extracted embedding:", queryEmbedding);
       return [];
     }
 
