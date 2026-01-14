@@ -84,6 +84,7 @@ export default defineSchema({
     aiChat: v.optional(v.boolean()), // Enable AI chat in right sidebar
     contactForm: v.optional(v.boolean()), // Enable contact form on this page
     newsletter: v.optional(v.boolean()), // Override newsletter signup display (true/false)
+    unlisted: v.optional(v.boolean()), // Hide from listings but allow direct access via slug
     textAlign: v.optional(v.string()), // Text alignment: "left", "center", "right" (default: "left")
     docsSection: v.optional(v.boolean()), // Include in docs navigation
     docsSectionGroup: v.optional(v.string()), // Sidebar group name in docs
