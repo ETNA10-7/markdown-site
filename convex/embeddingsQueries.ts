@@ -19,7 +19,7 @@ export const getPostsWithoutEmbeddings = internalQuery({
       .collect();
 
     return posts
-      .filter((post) => !post.embedding)
+      .filter((post) => !post.embedding && !post.unlisted)
       .slice(0, args.limit)
       .map((post) => ({
         _id: post._id,
@@ -47,7 +47,7 @@ export const getPagesWithoutEmbeddings = internalQuery({
       .collect();
 
     return pages
-      .filter((page) => !page.embedding)
+      .filter((page) => !page.embedding && !page.unlisted)
       .slice(0, args.limit)
       .map((page) => ({
         _id: page._id,
