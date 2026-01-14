@@ -309,3 +309,51 @@ export const regeneratePostEmbedding = action({
     }
   },
 });
+
+// Public action to regenerate embedding for a specific page
+export const regeneratePageEmbedding = action({
+  args: { slug: v.string() },
+  returns: v.object({ success: v.boolean(), error: v.optional(v.string()) }),
+  handler: async (ctx, args) => {
+    if (!process.env.HUGGINGFACE_API_KEY) {
+      return { success: false, error: "HUGGINGFACE_API_KEY not configured" };
+    }
+
+    // Find the page by slug
+    const page = await ctx.runQuery(internal.embeddingsQueries.getPageBySlug, {
+      slug: args.slug,
+    });
+
+    if (!page) {
+      return { success: false, error: "Page not found" };
+    }
+
+    try {
+      // Fetch full content from IPFS
+      let content = "";
+      try {
+        content = await fetchContentFromIPFS(page.contentCid);
+      } catch (error) {
+        console.error(`Failed to fetch content from IPFS for page ${page._id}:`, error);
+        // Fallback to title-only if IPFS fetch fails
+        content = "";
+      }
+
+      // Prepare text for embedding: title + content
+      const textToEmbed = content
+        ? prepareTextForEmbedding(page.title, content)
+        : page.title; // Fallback to title only if content fetch failed
+
+      const embedding = await ctx.runAction(internal.embeddings.generateEmbedding, {
+        text: textToEmbed,
+      });
+      await ctx.runMutation(internal.embeddingsQueries.savePageEmbedding, {
+        id: page._id,
+        embedding,
+      });
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: String(error) };
+    }
+  },
+});

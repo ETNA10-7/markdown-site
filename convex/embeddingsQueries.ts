@@ -106,3 +106,31 @@ export const getPostBySlug = internalQuery({
     };
   },
 });
+
+// Internal query to get page by slug
+// Note: Content is stored on IPFS, returns contentCid instead
+export const getPageBySlug = internalQuery({
+  args: { slug: v.string() },
+  returns: v.union(
+    v.object({
+      _id: v.id("pages"),
+      title: v.string(),
+      contentCid: v.string(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const page = await ctx.db
+      .query("pages")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .first();
+
+    if (!page) return null;
+
+    return {
+      _id: page._id,
+      title: page.title,
+      contentCid: page.contentCid,
+    };
+  },
+});
