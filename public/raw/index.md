@@ -28,7 +28,7 @@ agents. -->
 
 ---
 
-## Blog Posts (18)
+## Blog Posts (19)
 
 - **[How I added WorkOS to my Convex app with Cursor](/raw/workos-with-convex-cursor.md)** - A timeline of adding WorkOS AuthKit authentication to my markdown blog dashboard using Cursor, prompt engineering, and vibe coding. From PRD import to published feature.
   - Date: 2025-12-30 | Reading time: 8 min read | Tags: cursor, workos, convex, prompt-engineering, ai-coding
@@ -66,6 +66,8 @@ agents. -->
   - Date: 2025-12-14 | Reading time: 8 min read | Tags: convex, netlify, tutorial, deployment
 - **[Using Images in Blog Posts](/raw/using-images-in-posts.md)** - Learn how to add header images, inline images, and Open Graph images to your markdown posts.
   - Date: 2025-12-14 | Reading time: 4 min read | Tags: images, tutorial, markdown, open-graph
+- **[Understanding Semantic Search and Embeddings](/raw/my-first-blog.md)** - A comprehensive guide to how semantic search works using embeddings and vector similarity to find content by meaning.
+  - Date: 2025-01-17 | Reading time: 5 min read | Tags: semantic-search, embeddings, ai, tutorial
 
 ## Pages (15)
 
@@ -87,7 +89,7 @@ agents. -->
 
 ---
 
-**Total Content:** 18 posts, 15 pages
+**Total Content:** 19 posts, 15 pages
 
 All content is available as raw markdown files at `/raw/{slug}.md`
 
