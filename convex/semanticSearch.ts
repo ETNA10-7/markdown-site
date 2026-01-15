@@ -8,6 +8,78 @@ const HUGGINGFACE_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
 // Router API format: https://router.huggingface.co/hf-inference/models/{model}/pipeline/feature-extraction
 const HUGGINGFACE_API_URL = `https://router.huggingface.co/hf-inference/models/${HUGGINGFACE_MODEL}/pipeline/feature-extraction`;
 
+// Get IPFS gateway URL from environment variable or use default
+function getIPFSGatewayUrl(): string {
+  const customGateway = process.env.PINATA_GATEWAY_URL;
+  if (customGateway) {
+    // If custom gateway already starts with http:// or https://, use it as-is
+    // Otherwise, add https:// prefix
+    return customGateway.startsWith("http://") || customGateway.startsWith("https://")
+      ? customGateway
+      : `https://${customGateway}`;
+  }
+  return "https://gateway.pinata.cloud";
+}
+
+// Fetch content from IPFS using CID
+async function fetchContentFromIPFS(cid: string): Promise<string> {
+  if (!cid) {
+    throw new Error("CID is required to fetch content from IPFS");
+  }
+
+  const gatewayBase = getIPFSGatewayUrl();
+  const publicGatewayBase = "https://gateway.pinata.cloud";
+  const gatewayUrl = `${gatewayBase}/ipfs/${cid}`;
+  const publicGatewayUrl = `${publicGatewayBase}/ipfs/${cid}`;
+
+  // Try custom gateway first, fallback to public gateway on 403, 401, 429, or other errors
+  try {
+    const response = await fetch(gatewayUrl);
+    if (!response.ok) {
+      // If custom gateway returns 403 (Forbidden), 401 (Unauthorized), or 429 (Rate Limited), try public gateway
+      if (response.status === 403 || response.status === 401 || response.status === 429) {
+        const fallbackResponse = await fetch(publicGatewayUrl);
+        if (!fallbackResponse.ok) {
+          throw new Error(
+            `Failed to fetch content from IPFS: ${fallbackResponse.status} ${fallbackResponse.statusText}`
+          );
+        }
+        return await fallbackResponse.text();
+      }
+      throw new Error(
+        `Failed to fetch content from IPFS: ${response.status} ${response.statusText}`
+      );
+    }
+    const content = await response.text();
+    return content;
+  } catch (error) {
+    // If custom gateway fails completely, try public gateway as fallback
+    if (gatewayBase !== publicGatewayBase) {
+      try {
+        const fallbackResponse = await fetch(publicGatewayUrl);
+        if (!fallbackResponse.ok) {
+          throw new Error(
+            `Failed to fetch content from IPFS: ${fallbackResponse.status} ${fallbackResponse.statusText}`
+          );
+        }
+        return await fallbackResponse.text();
+      } catch (fallbackError) {
+        // If both fail, throw the original error
+        if (error instanceof Error) {
+          throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
+        }
+        throw new Error(`Failed to fetch content from IPFS: ${String(error)}`);
+      }
+    }
+    
+    // If already using public gateway or fallback failed, throw error
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch content from IPFS: ${error.message}`);
+    }
+    throw new Error(`Failed to fetch content from IPFS: ${String(error)}`);
+  }
+}
+
 // Search result type matching existing search.ts format
 const searchResultValidator = v.object({
   _id: v.string(),
@@ -138,14 +210,26 @@ export const semanticSearch = action({
       const post = posts.find((p) => p._id === result._id);
       // Explicitly skip unlisted posts (defensive check - query already filters, but this adds safety)
       if (post && !post.unlisted) {
-        // Note: Content is on IPFS, use description as snippet
+        // Fetch content from IPFS and create snippet from actual content
+        let snippet = post.description
+          ? post.description.slice(0, 120) + (post.description.length > 120 ? "..." : "")
+          : "";
+        
+        try {
+          const content = await fetchContentFromIPFS(post.contentCid);
+          snippet = createSnippet(content, 150);
+        } catch (error) {
+          // Fallback to description if IPFS fetch fails
+          console.error(`Failed to fetch content from IPFS for post ${post._id}:`, error);
+        }
+
         results.push({
           _id: String(post._id),
           type: "post",
           slug: post.slug,
           title: post.title,
           description: post.description,
-          snippet: post.description.slice(0, 120) + (post.description.length > 120 ? "..." : ""),
+          snippet,
           score: result._score,
         });
       }
@@ -155,12 +239,23 @@ export const semanticSearch = action({
     for (const result of pageResults) {
       const page = pages.find((p) => p._id === result._id);
       if (page) {
+        // Fetch content from IPFS and create snippet from actual content
+        let snippet = page.title;
+        
+        try {
+          const content = await fetchContentFromIPFS(page.contentCid);
+          snippet = createSnippet(content, 150);
+        } catch (error) {
+          // Fallback to title if IPFS fetch fails
+          console.error(`Failed to fetch content from IPFS for page ${page._id}:`, error);
+        }
+
         results.push({
           _id: String(page._id),
           type: "page",
           slug: page.slug,
           title: page.title,
-          snippet: page.title, // Content is on IPFS, use title as snippet
+          snippet,
           score: result._score,
         });
       }
