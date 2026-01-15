@@ -3466,6 +3466,16 @@ body {
   color: var(--text-primary);
 }
 
+.search-mode-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.search-mode-btn.disabled:hover {
+  background: transparent;
+  color: var(--text-muted);
+}
+
 /* Search result meta (type + score) */
 .search-result-meta {
   display: flex;

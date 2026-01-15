@@ -46,6 +46,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   // Semantic search action
   const semanticSearchAction = useAction(api.semanticSearch.semanticSearch);
+  const isSemanticSearchAvailableAction = useAction(api.semanticSearch.isSemanticSearchAvailable);
+  const [isSemanticSearchAvailable, setIsSemanticSearchAvailable] = useState<boolean | null>(null);
 
   // Trigger keyword search with debounce
   useEffect(() => {
@@ -105,6 +107,20 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
       ? isKeywordSearching
       : isSemanticSearching;
 
+  // Check if semantic search is available
+  useEffect(() => {
+    const checkAvailability = async () => {
+      try {
+        const available = await isSemanticSearchAvailableAction({});
+        setIsSemanticSearchAvailable(available);
+      } catch (error) {
+        console.error("Failed to check semantic search availability:", error);
+        setIsSemanticSearchAvailable(false);
+      }
+    };
+    checkAvailability();
+  }, [isSemanticSearchAvailableAction]);
+
   // Focus input when modal opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -123,10 +139,15 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      // Tab toggles between search modes
+      // Tab toggles between search modes (only if semantic search is available)
       if (e.key === "Tab") {
         e.preventDefault();
-        setSearchMode((prev) => (prev === "keyword" ? "semantic" : "keyword"));
+        if (isSemanticSearchAvailable === false) {
+          // If semantic search is unavailable, stay on keyword mode
+          setSearchMode("keyword");
+        } else {
+          setSearchMode((prev) => (prev === "keyword" ? "semantic" : "keyword"));
+        }
         return;
       }
 
@@ -203,8 +224,17 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           </button>
           <button
             className={`search-mode-btn ${searchMode === "semantic" ? "active" : ""}`}
-            onClick={() => setSearchMode("semantic")}
-            title="Semantic search - finds similar meaning"
+            onClick={() => {
+              if (isSemanticSearchAvailable !== false) {
+                setSearchMode("semantic");
+              }
+            }}
+            title={
+              isSemanticSearchAvailable === false
+                ? "Semantic search requires API key configuration"
+                : "Semantic search - finds similar meaning"
+            }
+            disabled={isSemanticSearchAvailable === false}
           >
             <Brain size={16} weight="bold" />
             <span>Semantic</span>
@@ -264,6 +294,16 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           ) : isLoading ? (
             <div className="search-modal-loading">
               {searchMode === "semantic" ? "Finding similar content..." : "Searching..."}
+            </div>
+          ) : searchMode === "semantic" && isSemanticSearchAvailable === false ? (
+            <div className="search-modal-empty">
+              <p>Semantic search is not available</p>
+              <p className="search-modal-empty-hint">
+                Semantic search requires HUGGINGFACE_API_KEY to be configured in Convex environment variables.
+              </p>
+              <p className="search-modal-empty-hint">
+                Use keyword search for exact word matches.
+              </p>
             </div>
           ) : results && results.length === 0 ? (
             <div className="search-modal-empty">
