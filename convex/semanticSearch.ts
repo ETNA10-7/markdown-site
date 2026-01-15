@@ -220,7 +220,11 @@ export const semanticSearch = action({
           snippet = createSnippet(content, 150);
         } catch (error) {
           // Fallback to description if IPFS fetch fails
-          console.error(`Failed to fetch content from IPFS for post ${post._id}:`, error);
+          // Only log non-rate-limit errors (429 is expected and handled gracefully)
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (!errorMessage.includes("429")) {
+            console.warn(`Failed to fetch content from IPFS for post ${post._id}:`, errorMessage);
+          }
         }
 
         results.push({
@@ -247,7 +251,11 @@ export const semanticSearch = action({
           snippet = createSnippet(content, 150);
         } catch (error) {
           // Fallback to title if IPFS fetch fails
-          console.error(`Failed to fetch content from IPFS for page ${page._id}:`, error);
+          // Only log non-rate-limit errors (429 is expected and handled gracefully)
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (!errorMessage.includes("429")) {
+            console.warn(`Failed to fetch content from IPFS for page ${page._id}:`, errorMessage);
+          }
         }
 
         results.push({
